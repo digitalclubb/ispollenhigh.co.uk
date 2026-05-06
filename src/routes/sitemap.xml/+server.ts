@@ -9,7 +9,7 @@ import type { RequestHandler } from './$types';
  * level and changes every crawl. That keeps Google's freshness signal honest.
  */
 
-export const config = { runtime: 'edge' };
+export const config = { regions: ['lhr1'] };
 
 const SITE = 'https://ispollenhigh.co.uk';
 const LEGAL_PAGES = ['/about', '/privacy', '/terms', '/cookies'];

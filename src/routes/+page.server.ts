@@ -2,8 +2,9 @@ import { getPollen } from '$lib/server/pollen-service';
 import { locationFromHeaders } from '$lib/utils/location';
 import type { PageServerLoad } from './$types';
 
+// Node runtime via Vercel's Fluid Compute (the dedicated 'edge' runtime is
+// deprecated). Pinned to lhr1 because the audience is UK-only.
 export const config = {
-	runtime: 'edge',
 	regions: ['lhr1']
 };
 

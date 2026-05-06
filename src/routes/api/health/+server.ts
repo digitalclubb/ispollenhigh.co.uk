@@ -18,7 +18,7 @@ import type { RequestHandler } from './$types';
  * most one upstream call per minute regardless of monitor fan-out.
  */
 
-export const config = { runtime: 'edge' };
+export const config = { regions: ['lhr1'] };
 
 const PROBE = { lat: 51.5, lon: -0.1, locationName: 'London' };
 const CACHE = 'public, s-maxage=60, stale-while-revalidate=120';

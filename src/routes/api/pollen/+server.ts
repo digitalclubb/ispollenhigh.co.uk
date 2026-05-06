@@ -20,8 +20,10 @@ import type { RequestHandler } from './$types';
  * patterns or someone scraping the data.
  */
 
+// Default runtime (Node via Fluid Compute). The dedicated 'edge' runtime
+// is deprecated by adapter-vercel.
 export const config = {
-	runtime: 'edge'
+	regions: ['lhr1']
 };
 
 const COORD_PRECISION = 2;

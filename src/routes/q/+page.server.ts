@@ -12,7 +12,7 @@ import type { PageServerLoad } from './$types';
  * This route is no-indexed so the search-result hop never appears in Google.
  */
 
-export const config = { runtime: 'edge' };
+export const config = { regions: ['lhr1'] };
 
 const SAFE_NOTFOUND = /[^A-Za-z0-9\s'-]/g;
 
