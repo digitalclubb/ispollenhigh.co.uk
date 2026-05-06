@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '$lib/styles/global.css';
+	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
 
 	let { children } = $props();
 </script>
@@ -29,6 +30,8 @@
 		</small>
 	</p>
 </footer>
+
+<InstallPrompt />
 
 <style>
 	footer {
