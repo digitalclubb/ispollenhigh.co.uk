@@ -1,11 +1,9 @@
 <script lang="ts">
 	import '$lib/styles/global.css';
-	import { inject } from '@vercel/analytics';
 	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
-	import { onMount } from 'svelte';
 
-	// onMount only runs client-side, no browser guard needed.
-	onMount(() => inject({ mode: 'production' }));
+	// Analytics and Speed Insights are mounted in `+layout.ts` per Vercel's
+	// SvelteKit guidance so route changes are tracked end-to-end.
 
 	let { children } = $props();
 </script>

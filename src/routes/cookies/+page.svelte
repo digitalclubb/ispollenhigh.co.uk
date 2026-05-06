@@ -11,9 +11,10 @@
 	<h1>Cookies</h1>
 
 	<p>
-		ispollenhigh does not set cookies. We use Vercel Web Analytics in
-		cookieless mode and we do not run any other tracking. That is the whole
-		story but the rest of this page exists so you can verify it.
+		ispollenhigh does not set cookies. We use Vercel Web Analytics and Vercel
+		Speed Insights, both in cookieless mode, and we do not run any other
+		tracking. That is the whole story but the rest of this page exists so
+		you can verify it.
 	</p>
 
 	<h2>What we store on your device</h2>
@@ -60,8 +61,9 @@
 	<p>
 		We do not embed third-party widgets, ads or trackers. The only external
 		network calls the site makes are to the pollen data provider (server
-		side, on the edge function) and to Vercel Web Analytics, which does not
-		set cookies.
+		side, on the edge function) and to Vercel Web Analytics and Speed
+		Insights. Both Vercel products are cookieless and proxy through paths
+		on this domain rather than calling third-party hosts directly.
 	</p>
 </article>
 

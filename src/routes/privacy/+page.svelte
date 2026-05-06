@@ -29,10 +29,12 @@
 
 	<h2>Analytics</h2>
 	<p>
-		We use Vercel Web Analytics in cookieless mode. It records anonymous
-		aggregate counts of page views and the pages people land on. It does not
-		set cookies, does not use device fingerprinting and does not send anything
-		to advertisers.
+		We use Vercel Web Analytics and Vercel Speed Insights, both in cookieless
+		mode. Web Analytics records anonymous aggregate counts of page views and
+		the pages people land on. Speed Insights collects anonymous Core Web
+		Vitals (loading speed, layout stability, interaction responsiveness) so
+		we can keep the site fast. Neither sets cookies, neither uses device
+		fingerprinting and neither sends anything to advertisers.
 	</p>
 
 	<h2>Data we never collect</h2>
