@@ -6,6 +6,7 @@
 	import PollenCard from '$lib/components/PollenCard.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
+	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -78,6 +79,17 @@
 		name="description"
 		content="A straight answer to whether pollen is high in your area today, with a five-day outlook for grass, tree and weed pollen."
 	/>
+	<link rel="canonical" href="https://ispollenhigh.co.uk/" />
+	<meta property="og:title" content="Is pollen high today?" />
+	<meta
+		property="og:description"
+		content="A straight answer to whether pollen is high in your area today, for any UK postcode."
+	/>
+	<meta property="og:url" content="https://ispollenhigh.co.uk/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="en_GB" />
+	<meta name="twitter:card" content="summary" />
+	{@html `<script type="application/ld+json">${jsonLdScript(homepageJsonLd())}</script>`}
 </svelte:head>
 
 <HeroAnswer

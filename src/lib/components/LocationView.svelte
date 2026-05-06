@@ -1,8 +1,10 @@
 <script lang="ts">
-	import type { Location } from '$lib/data/locations';
+	import { type Location, getCanonicalPath } from '$lib/data/locations';
 	import type { PollenReading } from '$lib/types/pollen';
+	import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
 	import ForecastStrip from './ForecastStrip.svelte';
 	import HeroAnswer from './HeroAnswer.svelte';
+	import LocationCopy from './LocationCopy.svelte';
 	import PollenCard from './PollenCard.svelte';
 	import Search from './Search.svelte';
 
@@ -13,9 +15,9 @@
 
 	let { reading, location }: Props = $props();
 
-	const canonical = $derived(
-		`https://ispollenhigh.co.uk${location.type === 'region' ? '/region/' : '/'}${location.slug}`
-	);
+	const canonical = $derived(`https://ispollenhigh.co.uk${getCanonicalPath(location)}`);
+
+	const ld = $derived(jsonLdScript(locationJsonLd(location, reading)));
 </script>
 
 <svelte:head>
@@ -25,6 +27,16 @@
 		content={`Pollen forecast for ${location.name}. Today's grass, tree and weed levels with a five-day outlook.`}
 	/>
 	<link rel="canonical" href={canonical} />
+	<meta property="og:title" content={`Is pollen high in ${location.name}?`} />
+	<meta
+		property="og:description"
+		content={`Today's grass, tree and weed pollen levels for ${location.name} with a five-day outlook.`}
+	/>
+	<meta property="og:url" content={canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="en_GB" />
+	<meta name="twitter:card" content="summary" />
+	{@html `<script type="application/ld+json">${ld}</script>`}
 </svelte:head>
 
 <HeroAnswer
@@ -40,6 +52,8 @@
 </section>
 
 <ForecastStrip forecast={reading.forecast} />
+
+<LocationCopy {location} />
 
 <section class="search-zone" aria-label="Look up another location">
 	<h2>Check another area</h2>
