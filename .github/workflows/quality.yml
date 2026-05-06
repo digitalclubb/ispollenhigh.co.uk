@@ -27,12 +27,25 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for Vercel to finish deploying this commit
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
-        id: vercel
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 300
+
+      # We test the production domain directly rather than the Vercel
+      # deployment-specific URL. The deployment URL is gated behind Vercel
+      # auth (401), the production domain is public. Polling /api/health
+      # in skip mode gives us a cheap readiness signal without burning
+      # Google Pollen quota.
+      - name: Wait for production to be reachable
+        run: |
+          for i in $(seq 1 36); do
+            if curl -sf -o /dev/null --max-time 5 "https://ispollenhigh.co.uk/api/health?upstream=skip"; then
+              echo "Production reachable on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: not yet reachable, waiting..."
+            sleep 5
+          done
+          echo "Timed out waiting for production"
+          exit 1
+
       - name: Run Lighthouse on production URLs
         uses: treosh/lighthouse-ci-action@v12
         with:
