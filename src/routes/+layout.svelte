@@ -1,13 +1,11 @@
 <script lang="ts">
 	import '$lib/styles/global.css';
-	import { browser } from '$app/environment';
 	import { inject } from '@vercel/analytics';
 	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
 	import { onMount } from 'svelte';
 
-	onMount(() => {
-		if (browser) inject({ mode: 'production' });
-	});
+	// onMount only runs client-side, no browser guard needed.
+	onMount(() => inject({ mode: 'production' }));
 
 	let { children } = $props();
 </script>

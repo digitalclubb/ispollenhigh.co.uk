@@ -32,19 +32,19 @@ Set these in Project Settings → Environment Variables, scoped to **Production,
 ## 5. Search Console
 
 - [ ] Add `ispollenhigh.co.uk` as a Domain property in Google Search Console
-- [ ] Verify ownership via the DNS TXT record method (preferred — survives DNS changes)
+- [ ] Verify ownership via the DNS TXT record method (preferred, survives DNS changes)
 - [ ] Submit `https://ispollenhigh.co.uk/sitemap.xml`
-- [ ] Validate the sitemap: should report ~187 URLs discovered
+- [ ] Validate the sitemap: should report around 190 URLs discovered
 
 ## 6. Pre-flight checks
 
 Run before announcing the site:
 
 - [ ] Lighthouse mobile run on `/`, `/london`, `/sw`, `/region/south-east`. All four should score 100 across performance, accessibility, best practices, SEO
-- [ ] axe DevTools or `pnpm dlx @axe-core/cli https://ispollenhigh.co.uk` — zero violations
+- [ ] axe DevTools or `pnpm dlx @axe-core/cli https://ispollenhigh.co.uk` shows zero violations
 - [ ] Google Rich Results Test on `/` and `/london`. FAQPage and BreadcrumbList should parse cleanly
-- [ ] Throttle DevTools Network to Offline, reload — last reading still renders, /offline page available
-- [ ] Twitter Card Validator + LinkedIn Post Inspector against `https://ispollenhigh.co.uk/` — OG image renders
+- [ ] Throttle DevTools Network to Offline, reload, last reading still renders, /offline page available
+- [ ] Twitter Card Validator + LinkedIn Post Inspector against `https://ispollenhigh.co.uk/`, OG image renders
 - [ ] Confirm `/api/pollen?lat=51.5&lon=-0.1` returns 200 with `X-Pollen-Source: google`
 - [ ] Confirm `/api/pollen?lat=51.5074&lon=-0.1278` returns 308 to the canonical bucketed coords
 - [ ] Confirm sitemap `lastmod` is today's date
