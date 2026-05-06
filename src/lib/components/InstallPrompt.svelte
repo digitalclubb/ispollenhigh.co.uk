@@ -1,13 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { answerHasRendered } from '$lib/state/install-prompt.svelte';
 
 	type BeforeInstallPromptEvent = Event & {
 		prompt: () => Promise<void>;
 		userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 	};
 
+	const VISIT_KEY = 'iph_visited_at';
+	const DISMISS_KEY = 'iph_install_dismissed_at';
+	// Re-prompt after 30 days. Pollen sufferers come and go through the season.
+	const DISMISS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
 	let deferred = $state<BeforeInstallPromptEvent | null>(null);
-	let dismissed = $state(false);
+	let dismissed = $state(true);
+	let visitedBefore = $state(false);
 
 	onMount(() => {
 		const onBefore = (e: Event) => {
@@ -17,11 +24,17 @@
 		const onInstalled = () => {
 			deferred = null;
 		};
+
 		try {
-			dismissed = localStorage.getItem('install_dismissed') === '1';
+			const lastDismiss = Number(localStorage.getItem(DISMISS_KEY) ?? '0');
+			dismissed = lastDismiss > 0 && Date.now() - lastDismiss < DISMISS_TTL_MS;
+			visitedBefore = localStorage.getItem(VISIT_KEY) !== null;
+			localStorage.setItem(VISIT_KEY, String(Date.now()));
 		} catch {
-			// Storage may be denied. Treat as not dismissed.
+			dismissed = false;
+			visitedBefore = false;
 		}
+
 		window.addEventListener('beforeinstallprompt', onBefore);
 		window.addEventListener('appinstalled', onInstalled);
 		return () => {
@@ -29,6 +42,10 @@
 			window.removeEventListener('appinstalled', onInstalled);
 		};
 	});
+
+	const visible = $derived(
+		deferred !== null && !dismissed && visitedBefore && answerHasRendered()
+	);
 
 	async function install() {
 		if (!deferred) return;
@@ -45,19 +62,26 @@
 
 	function remember() {
 		try {
-			localStorage.setItem('install_dismissed', '1');
+			localStorage.setItem(DISMISS_KEY, String(Date.now()));
 		} catch {
 			// Ignore storage failure.
 		}
 	}
 </script>
 
-{#if deferred && !dismissed}
+{#if visible}
 	<aside class="prompt" aria-label="Install ispollenhigh">
 		<p>Install ispollenhigh for one-tap access. Works offline with your last reading.</p>
 		<div class="actions">
 			<button type="button" class="btn primary" onclick={install}>Install</button>
-			<button type="button" class="btn ghost" onclick={dismiss}>Not now</button>
+			<button
+				type="button"
+				class="btn ghost"
+				onclick={dismiss}
+				aria-label="Dismiss install prompt"
+			>
+				Not now
+			</button>
 		</div>
 	</aside>
 {/if}

@@ -1,13 +1,17 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import ForecastStrip from '$lib/components/ForecastStrip.svelte';
 	import GeoActions from '$lib/components/GeoActions.svelte';
 	import HeroAnswer from '$lib/components/HeroAnswer.svelte';
 	import PollenCard from '$lib/components/PollenCard.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
 	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
+
+	onMount(() => markAnswerRendered());
 
 	let { data }: { data: PageData } = $props();
 	const notFoundQuery = $derived(page.url.searchParams.get('notfound'));

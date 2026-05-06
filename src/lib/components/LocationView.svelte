@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { type Location, getCanonicalPath } from '$lib/data/locations';
+	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
 	import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
 	import ForecastStrip from './ForecastStrip.svelte';
@@ -14,6 +16,8 @@
 	};
 
 	let { reading, location }: Props = $props();
+
+	onMount(() => markAnswerRendered());
 
 	const canonical = $derived(`https://ispollenhigh.co.uk${getCanonicalPath(location)}`);
 

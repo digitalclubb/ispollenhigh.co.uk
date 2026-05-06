@@ -1,10 +1,12 @@
 {
+	"id": "/",
 	"name": "ispollenhigh",
 	"short_name": "ispollenhigh",
 	"description": "Is pollen high in your area in the UK today?",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
+	"display_override": ["standalone"],
 	"orientation": "portrait",
 	"background_color": "#FAF7F2",
 	"theme_color": "#FAF7F2",
