@@ -4,8 +4,9 @@ import { getPollen } from '$lib/server/pollen-service';
 import type { PageServerLoad } from './$types';
 
 export const config = {
-	runtime: 'edge',
-	regions: ['lhr1']
+	runtime: 'nodejs22.x',
+	regions: ['lhr1'],
+	isr: { expiration: 1800 }
 };
 
 export const prerender = false;

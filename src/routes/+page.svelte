@@ -6,7 +6,7 @@
 	import PollenCard from '$lib/components/PollenCard.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
-	import { homepageJsonLd } from '$lib/utils/jsonld';
+	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -89,7 +89,7 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:locale" content="en_GB" />
 	<meta name="twitter:card" content="summary" />
-	{@html `<script type="application/ld+json">${JSON.stringify(homepageJsonLd())}</script>`}
+	{@html `<script type="application/ld+json">${jsonLdScript(homepageJsonLd())}</script>`}
 </svelte:head>
 
 <HeroAnswer

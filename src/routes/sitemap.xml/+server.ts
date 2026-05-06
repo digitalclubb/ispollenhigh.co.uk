@@ -14,13 +14,26 @@ export const config = { runtime: 'edge' };
 const SITE = 'https://ispollenhigh.co.uk';
 const LEGAL_PAGES = ['/about', '/privacy', '/terms', '/cookies'];
 
+function xmlEscape(s: string): string {
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&apos;');
+}
+
 export const GET: RequestHandler = () => {
 	const today = new Date().toISOString().slice(0, 10);
 	const urls: { loc: string; priority: string }[] = [{ loc: SITE, priority: '1.0' }];
 
+	const seen = new Set<string>();
 	for (const loc of ALL_LOCATIONS) {
+		const path = getCanonicalPath(loc);
+		if (seen.has(path)) continue;
+		seen.add(path);
 		const priority = loc.type === 'city' ? '0.9' : loc.type === 'postcode-area' ? '0.7' : '0.6';
-		urls.push({ loc: `${SITE}${getCanonicalPath(loc)}`, priority });
+		urls.push({ loc: `${SITE}${path}`, priority });
 	}
 
 	for (const path of LEGAL_PAGES) {
@@ -32,7 +45,7 @@ export const GET: RequestHandler = () => {
 ${urls
 	.map(
 		({ loc, priority }) =>
-			`	<url>\n\t\t<loc>${loc}</loc>\n\t\t<lastmod>${today}</lastmod>\n\t\t<priority>${priority}</priority>\n\t</url>`
+			`	<url>\n\t\t<loc>${xmlEscape(loc)}</loc>\n\t\t<lastmod>${today}</lastmod>\n\t\t<priority>${priority}</priority>\n\t</url>`
 	)
 	.join('\n')}
 </urlset>`;

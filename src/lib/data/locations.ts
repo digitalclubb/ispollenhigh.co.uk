@@ -1479,6 +1479,16 @@ export function findRegion(slug: string | undefined): Location | undefined {
 }
 
 export function getCanonicalPath(loc: Location): string {
+	// Greater London the region and London the city share an audience and a
+	// centroid. We canonicalise the region to the city URL so Google only
+	// indexes one of them.
+	if (loc.type === 'region' && loc.slug === 'london') return '/london';
+	if (loc.type === 'region') return `/region/${loc.slug}`;
+	return `/${loc.slug}`;
+}
+
+export function getServedPath(loc: Location): string {
+	// Where the route actually lives, ignoring canonicalisation.
 	if (loc.type === 'region') return `/region/${loc.slug}`;
 	return `/${loc.slug}`;
 }

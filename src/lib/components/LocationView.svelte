@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Location } from '$lib/data/locations';
+	import { type Location, getCanonicalPath } from '$lib/data/locations';
 	import type { PollenReading } from '$lib/types/pollen';
-	import { locationJsonLd } from '$lib/utils/jsonld';
+	import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
 	import ForecastStrip from './ForecastStrip.svelte';
 	import HeroAnswer from './HeroAnswer.svelte';
 	import LocationCopy from './LocationCopy.svelte';
@@ -15,11 +15,9 @@
 
 	let { reading, location }: Props = $props();
 
-	const canonical = $derived(
-		`https://ispollenhigh.co.uk${location.type === 'region' ? '/region/' : '/'}${location.slug}`
-	);
+	const canonical = $derived(`https://ispollenhigh.co.uk${getCanonicalPath(location)}`);
 
-	const ld = $derived(JSON.stringify(locationJsonLd(location, reading)));
+	const ld = $derived(jsonLdScript(locationJsonLd(location, reading)));
 </script>
 
 <svelte:head>

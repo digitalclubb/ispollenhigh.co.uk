@@ -1,6 +1,6 @@
 import type { Location } from '$lib/data/locations';
 import { findRegion, getCanonicalPath } from '$lib/data/locations';
-import type { PollenLevel, PollenReading } from '$lib/types/pollen';
+import type { PollenReading } from '$lib/types/pollen';
 import { levelLabel } from './format';
 
 const SITE = 'https://ispollenhigh.co.uk';
@@ -13,6 +13,16 @@ const ORG = {
 interface JsonLd {
 	'@context': string;
 	'@graph': unknown[];
+}
+
+/**
+ * Serialise structured data for inclusion inside a `<script type="application/ld+json">`
+ * tag. The `</` replacement defeats the classic HTML-in-JSON injection where a
+ * malicious string containing "</script>" would prematurely close the script
+ * element. JSON.stringify alone does not escape these.
+ */
+export function jsonLdScript(obj: unknown): string {
+	return JSON.stringify(obj).replace(/</g, '\\u003c');
 }
 
 export function homepageJsonLd(): JsonLd {
@@ -46,6 +56,12 @@ export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
 	const region = findRegion(loc.parentRegion);
 	const breadcrumb = breadcrumbList(loc, region);
 
+	const description = `Pollen forecast for ${loc.name}: overall ${levelLabel(
+		reading.overall.level
+	).toLowerCase()}, grass ${levelLabel(reading.types.grass.level).toLowerCase()}, tree ${levelLabel(
+		reading.types.tree.level
+	).toLowerCase()}, weed ${levelLabel(reading.types.weed.level).toLowerCase()} for ${reading.validFor}.`;
+
 	return {
 		'@context': 'https://schema.org',
 		'@graph': [
@@ -54,7 +70,10 @@ export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
 				'@id': `${url}#webpage`,
 				url,
 				name: `Is pollen high in ${loc.name}?`,
+				description,
 				inLanguage: 'en-GB',
+				datePublished: reading.validFor,
+				dateModified: reading.fetchedAt,
 				about: { '@id': `${url}#place` },
 				mainEntity: { '@id': `${url}#place` }
 			},
@@ -70,43 +89,20 @@ export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
 				address: { '@type': 'PostalAddress', addressCountry: 'GB' },
 				...(region ? { containedInPlace: { '@type': 'Place', name: region.name } } : {})
 			},
-			breadcrumb,
-			pollenObservation(loc, reading)
+			breadcrumb
 		]
 	};
-}
-
-function pollenObservation(loc: Location, reading: PollenReading) {
-	return {
-		'@type': 'Observation',
-		measuredProperty: 'pollen',
-		measuredValue: levelLabel(reading.overall.level),
-		observationDate: reading.validFor,
-		observationAbout: {
-			'@type': 'Place',
-			name: loc.name
-		},
-		variableMeasured: [
-			variable('Grass pollen', reading.types.grass.level),
-			variable('Tree pollen', reading.types.tree.level),
-			variable('Weed pollen', reading.types.weed.level)
-		]
-	};
-}
-
-function variable(name: string, level: PollenLevel) {
-	return { '@type': 'PropertyValue', name, value: levelLabel(level) };
 }
 
 function breadcrumbList(loc: Location, region: Location | undefined) {
-	const items: Array<{ name: string; item: string; position: number }> = [
-		{ name: 'ispollenhigh', item: SITE, position: 1 }
+	const items: Array<{ name: string; url: string; position: number }> = [
+		{ name: 'ispollenhigh', url: SITE, position: 1 }
 	];
 	if (region && loc.type !== 'region') {
-		items.push({ name: region.name, item: `${SITE}${getCanonicalPath(region)}`, position: 2 });
-		items.push({ name: loc.name, item: `${SITE}${getCanonicalPath(loc)}`, position: 3 });
+		items.push({ name: region.name, url: `${SITE}${getCanonicalPath(region)}`, position: 2 });
+		items.push({ name: loc.name, url: `${SITE}${getCanonicalPath(loc)}`, position: 3 });
 	} else {
-		items.push({ name: loc.name, item: `${SITE}${getCanonicalPath(loc)}`, position: 2 });
+		items.push({ name: loc.name, url: `${SITE}${getCanonicalPath(loc)}`, position: 2 });
 	}
 	return {
 		'@type': 'BreadcrumbList',
@@ -114,7 +110,7 @@ function breadcrumbList(loc: Location, region: Location | undefined) {
 			'@type': 'ListItem',
 			position: i.position,
 			name: i.name,
-			item: i.item
+			item: { '@id': i.url, '@type': 'WebPage', url: i.url, name: i.name }
 		}))
 	};
 }

@@ -9,9 +9,17 @@ import type { PageServerLoad } from './$types';
  * local copy and JSON-LD; for phase 2 they share the homepage UI.
  */
 
+/**
+ * Vercel ISR: page is generated on demand and cached at the edge for 30
+ * minutes, matching the upstream pollen API cache. Hot pages serve as
+ * static HTML to crawlers and to repeat visitors; the function only runs
+ * when the cache expires. ISR requires the Node runtime so the edge config
+ * stays on /api/pollen and /q.
+ */
 export const config = {
-	runtime: 'edge',
-	regions: ['lhr1']
+	runtime: 'nodejs22.x',
+	regions: ['lhr1'],
+	isr: { expiration: 1800 }
 };
 
 export const prerender = false;

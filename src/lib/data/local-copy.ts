@@ -186,7 +186,7 @@ export function locationCopy(loc: Location): LocationCopyVars {
 
 	const intro = introFor(loc);
 	const species = `Tree pollen here is dominated by ${listAnd(r.dominantTrees)}, with grass led by ${listAnd(r.dominantGrasses)} and weeds by ${listAnd(r.dominantWeeds)}.`;
-	const timing = `Tree pollen typically peaks in ${r.peakTree}, and grass counts are highest from ${r.peakGrass}. ${capitalise(r.flavour)}.`;
+	const timing = `Tree pollen typically peaks in ${r.peakTree}. Grass counts are highest from ${r.peakGrass}. ${capitalise(r.flavour)}.`;
 	const cross = crossLink(loc);
 
 	return { intro, species, timing, cross };
