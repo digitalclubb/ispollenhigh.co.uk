@@ -16,7 +16,7 @@
 </script>
 
 <header class="hero" data-level={level}>
-	<p class="kicker">Pollen forecast — {date}</p>
+	<p class="kicker">Pollen forecast for {date}</p>
 	<h1 class:highlight>{text}</h1>
 </header>
 
@@ -42,7 +42,6 @@
 		letter-spacing: var(--tracking-tight);
 		color: var(--ink);
 		max-width: 16ch;
-		font-stretch: 95%;
 	}
 
 	h1.highlight {

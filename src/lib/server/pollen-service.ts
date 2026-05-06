@@ -33,15 +33,24 @@ export async function getPollen(args: {
 		const data = await withTimeout(fetchGooglePollen({ lat, lon, apiKey }), TIMEOUT_MS);
 		return { location, fetchedAt, ...data };
 	} catch (googleErr) {
+		console.warn('pollen-service: google failed, falling back', errMessage(googleErr));
 		try {
 			const data = await withTimeout(fetchOpenMeteoPollen({ lat, lon }), TIMEOUT_MS);
 			return { location, fetchedAt, ...data };
 		} catch (meteoErr) {
-			console.error('pollen-service: both providers failed', { googleErr, meteoErr });
+			console.error('pollen-service: both providers failed', {
+				google: errMessage(googleErr),
+				meteo: errMessage(meteoErr)
+			});
 			const synth = syntheticReading({ lat, lon, locationName: args.locationName });
 			return { ...synth, stale: true };
 		}
 	}
+}
+
+function errMessage(e: unknown): string {
+	if (e instanceof Error) return e.message;
+	return String(e);
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {

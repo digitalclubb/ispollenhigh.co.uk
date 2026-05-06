@@ -14,7 +14,14 @@
 	</p>
 
 	<div class="actions">
-		<button type="button" class="btn primary" disabled={busy} onclick={onUseLocation}>
+		<button
+			type="button"
+			class="btn primary"
+			disabled={busy}
+			aria-busy={busy}
+			aria-live="polite"
+			onclick={onUseLocation}
+		>
 			{busy ? 'Locating…' : 'Use my exact location'}
 		</button>
 

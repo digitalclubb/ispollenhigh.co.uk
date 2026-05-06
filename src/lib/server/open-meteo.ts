@@ -34,21 +34,39 @@ interface OpenMeteoResponse {
 	} & Partial<Record<string, number[]>>;
 }
 
+/*
+ * Bands derived from Met Office UK pollen forecast methodology (which itself
+ * cites the Worcester NPARU thresholds):
+ *   grass: low <30, moderate 30-49, high 50-149, very high 150+ grains/m³
+ *   tree:  low <15, moderate 15-89, high 90-499, very high 500+ grains/m³
+ *          (birch-leaning; alder and olive use the same bands here)
+ *   weed:  low <10, moderate 10-49, high 50-99,  very high 100+ grains/m³
+ * "very-low" is split out from "low" for our 6-step scale; "none" is grains < 1.
+ */
 function bandGrass(grains: number): PollenLevel {
 	if (grains < 1) return 'none';
-	if (grains < 30) return 'very-low';
-	if (grains < 50) return 'low';
-	if (grains < 150) return 'moderate';
-	if (grains < 300) return 'high';
+	if (grains < 15) return 'very-low';
+	if (grains < 30) return 'low';
+	if (grains < 50) return 'moderate';
+	if (grains < 150) return 'high';
 	return 'very-high';
 }
 
-function bandTreeOrWeed(grains: number): PollenLevel {
+function bandTree(grains: number): PollenLevel {
 	if (grains < 1) return 'none';
-	if (grains < 15) return 'very-low';
-	if (grains < 90) return 'low';
-	if (grains < 200) return 'moderate';
+	if (grains < 8) return 'very-low';
+	if (grains < 15) return 'low';
+	if (grains < 90) return 'moderate';
 	if (grains < 500) return 'high';
+	return 'very-high';
+}
+
+function bandWeed(grains: number): PollenLevel {
+	if (grains < 1) return 'none';
+	if (grains < 5) return 'very-low';
+	if (grains < 10) return 'low';
+	if (grains < 50) return 'moderate';
+	if (grains < 100) return 'high';
 	return 'very-high';
 }
 
@@ -86,8 +104,8 @@ function buildDay(
 	const weedMax = Math.max(...WEED_FIELDS.map((f) => dailyMaxFromHourly(hourly[f], dayIdx)));
 
 	const grassLevel = bandGrass(grass);
-	const treeLevel = bandTreeOrWeed(treeMax);
-	const weedLevel = bandTreeOrWeed(weedMax);
+	const treeLevel = bandTree(treeMax);
+	const weedLevel = bandWeed(weedMax);
 
 	const treeSpecies = dominantSpecies(hourly, TREE_FIELDS, dayIdx);
 	const weedSpecies = dominantSpecies(hourly, WEED_FIELDS, dayIdx);

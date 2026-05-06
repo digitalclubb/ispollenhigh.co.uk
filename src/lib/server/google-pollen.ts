@@ -127,7 +127,7 @@ export async function fetchGooglePollen(args: {
 	url.searchParams.set('days', '5');
 	url.searchParams.set('languageCode', 'en-GB');
 
-	const res = await fetch(url, { signal: args.signal });
+	const res = await fetchWithRetry(url, args.signal);
 	if (!res.ok) {
 		throw new Error(`Google Pollen API ${res.status}`);
 	}
@@ -143,4 +143,13 @@ export async function fetchGooglePollen(args: {
 		forecast: days,
 		source: 'google'
 	};
+}
+
+async function fetchWithRetry(url: URL, signal: AbortSignal | undefined): Promise<Response> {
+	const res = await fetch(url, { signal });
+	if (res.status >= 500 && res.status < 600) {
+		await new Promise((r) => setTimeout(r, 250));
+		return fetch(url, { signal });
+	}
+	return res;
 }

@@ -16,12 +16,16 @@
 
 	let busy = $state(false);
 	let geoError = $state<string | null>(null);
+	let inflight: AbortController | null = null;
 
 	async function useMyLocation() {
 		if (typeof navigator === 'undefined' || !navigator.geolocation) {
 			geoError = 'Your browser cannot share location.';
 			return;
 		}
+		inflight?.abort();
+		const controller = new AbortController();
+		inflight = controller;
 		busy = true;
 		geoError = null;
 		try {
@@ -32,21 +36,29 @@
 					maximumAge: 5 * 60 * 1000
 				});
 			});
+			// Round client-side to the canonical bucket so the CDN cache hits
+			// without a 308 round-trip.
 			const params = new URLSearchParams({
-				lat: pos.coords.latitude.toFixed(4),
-				lon: pos.coords.longitude.toFixed(4)
+				lat: roundToBucket(pos.coords.latitude),
+				lon: roundToBucket(pos.coords.longitude)
 			});
-			const res = await fetch(`/api/pollen?${params}`);
+			const res = await fetch(`/api/pollen?${params}`, { signal: controller.signal });
 			if (!res.ok) throw new Error(`api ${res.status}`);
 			const next = (await res.json()) as PollenReading;
-			next.location.name = 'your area';
 			override = next;
 		} catch (err) {
+			if (err instanceof DOMException && err.name === 'AbortError') return;
 			const msg = err instanceof GeolocationPositionError ? geolocationMessage(err.code) : null;
 			geoError = msg ?? 'We could not get your location. Try the search instead.';
 		} finally {
+			if (inflight === controller) inflight = null;
 			busy = false;
 		}
+	}
+
+	function roundToBucket(coord: number): string {
+		// Match server-side cache-key.ts STEP = 0.05.
+		return (Math.round(coord / 0.05) * 0.05).toFixed(2);
 	}
 
 	function geolocationMessage(code: number): string | null {
