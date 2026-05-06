@@ -43,7 +43,7 @@ const config = {
 				'style-src': ['self', 'unsafe-inline'],
 				'font-src': ['self'],
 				'img-src': ['self', 'data:'],
-				'connect-src': ['self', 'https://vitals.vercel-insights.com'],
+				'connect-src': ['self'],
 				'frame-ancestors': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self'],

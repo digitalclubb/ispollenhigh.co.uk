@@ -1,20 +1,16 @@
 import { injectAnalytics } from '@vercel/analytics/sveltekit';
-import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 import { dev } from '$app/environment';
 
 /**
- * Vercel Analytics + Speed Insights, mounted at the root layout per the
- * canonical Vercel docs:
+ * Vercel Analytics, mounted at the root layout per the canonical docs:
  *   https://vercel.com/docs/analytics/quickstart
- *   https://vercel.com/docs/speed-insights/quickstart
  *
- * The SvelteKit-specific entry points handle SvelteKit's client-side
+ * The SvelteKit-specific entry point handles SvelteKit's client-side
  * route changes automatically, so a Search-then-goto-/london counts as
- * a real page view rather than being missed. Both packages are no-ops
- * outside production and require Analytics / Speed Insights to be
- * enabled in the Vercel project dashboard before they collect data.
+ * a real page view rather than being missed. The package is a no-op
+ * outside production and requires Analytics to be enabled in the Vercel
+ * project dashboard before it collects data.
  */
 injectAnalytics({ mode: dev ? 'development' : 'production' });
-injectSpeedInsights();
 
 export const trailingSlash = 'never';
