@@ -5,6 +5,24 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="theme-color" content="#FAF7F2" />
 		<meta name="color-scheme" content="light" />
+		<!--
+			Pre-paint geo state probe. If a returning visitor has cached geo
+			coords in localStorage, set data-geo="loading" so CSS in
+			+page.svelte hides the SSR'd default and reveals the skeleton
+			from the very first paint, before the JS bundle even starts
+			downloading. The onMount handler in +page.svelte then fetches
+			fresh data for those coords and clears the attribute.
+
+			Intentionally minified to a single line: the bytes between the
+			<script> tags must match the SHA-256 hash in svelte.config.js
+			(under csp.directives.script-src) exactly. If you change this
+			script, recompute the hash:
+			  python3 -c "import hashlib,base64,sys;\
+			    print('sha256-'+base64.b64encode(hashlib.sha256(\
+			    sys.stdin.read().encode()).digest()).decode())"
+			and paste the script body without the surrounding tags.
+		-->
+		<script>(function(){try{if(!('geolocation' in navigator))return;if(localStorage.getItem('iph_geo_dismissed'))return;var r=localStorage.getItem('iph_last_location');if(!r)return;var p=JSON.parse(r);if(!p||typeof p.lat!=='number'||typeof p.lon!=='number')return;document.documentElement.setAttribute('data-geo','loading')}catch(_){}})();</script>
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
 		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
@@ -14,5 +32,7 @@
 		<meta name="apple-mobile-web-app-title" content="ispollenhigh" />
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover">%sveltekit.body%</body>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
 </html>

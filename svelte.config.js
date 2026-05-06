@@ -32,7 +32,14 @@ const config = {
 			mode: 'auto',
 			directives: {
 				'default-src': ['self'],
-				'script-src': ['self', 'https://va.vercel-scripts.com'],
+				// Hash for the inline geo-state probe in app.html. Update both
+				// the script and this hash together — see the comment above
+				// the <script> tag in src/app.html for the regen one-liner.
+				'script-src': [
+					'self',
+					'https://va.vercel-scripts.com',
+					'sha256-YjRSrAKEGHPwjPxI6ABzc0d/mNrZGyyxmPVARbQXKlU='
+				],
 				'style-src': ['self', 'unsafe-inline'],
 				'font-src': ['self'],
 				'img-src': ['self', 'data:'],

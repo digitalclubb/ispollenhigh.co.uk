@@ -4,13 +4,19 @@
 	import AnswerView from '$lib/components/AnswerView.svelte';
 	import GeoActions from '$lib/components/GeoActions.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import SkeletonAnswer from '$lib/components/SkeletonAnswer.svelte';
 	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
 	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
 
 	const GEO_DISMISSED_KEY = 'iph_geo_dismissed';
+	const LAST_LOCATION_KEY = 'iph_last_location';
 	const AUTO_PROMPT_DELAY_MS = 400;
+	// Hard ceiling so the skeleton never hangs (e.g. cached fetch stalls).
+	// Comfortably under Googlebot's ~5s render budget so a snapshot taken
+	// after this still shows the answer, not the loader.
+	const SKELETON_FALLBACK_MS = 4000;
 
 	let { data }: { data: PageData } = $props();
 	const notFoundQuery = $derived(page.url.searchParams.get('notfound'));
@@ -31,31 +37,93 @@
 	let geoError = $state<string | null>(null);
 	let inflight: AbortController | null = null;
 
+	/**
+	 * Remove the html[data-geo="loading"] attribute that the inline script in
+	 * app.html may have set. Once cleared, CSS reveals the AnswerView and
+	 * hides the skeleton. Safe to call from any code path — no-op if the
+	 * attribute was never set.
+	 */
+	function clearGeoLoadingState(): void {
+		if (typeof document === 'undefined') return;
+		document.documentElement.removeAttribute('data-geo');
+	}
+
 	onMount(() => {
 		markAnswerRendered();
 
-		// Auto-request browser geolocation on first paint. Skipped if the
-		// browser has no geolocation API, or if the user previously denied
-		// permission (we remember to avoid pestering). Per-location pages
-		// (/london, /sw etc.) don't run this — those are explicit.
-		if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+		// No browser geolocation API: inline script wouldn't have set the
+		// attribute, but clear defensively in case localStorage said one
+		// thing and feature detection said another.
+		if (typeof navigator === 'undefined' || !navigator.geolocation) {
+			clearGeoLoadingState();
+			return;
+		}
 
 		let dismissed = false;
+		let cached: { lat: number; lon: number } | null = null;
 		try {
 			dismissed = localStorage.getItem(GEO_DISMISSED_KEY) !== null;
+			const raw = localStorage.getItem(LAST_LOCATION_KEY);
+			if (raw) {
+				const parsed = JSON.parse(raw);
+				if (typeof parsed?.lat === 'number' && typeof parsed?.lon === 'number') {
+					cached = { lat: parsed.lat, lon: parsed.lon };
+				}
+			}
 		} catch {
-			// localStorage may be denied in privacy mode; treat as not dismissed.
+			// localStorage denied (privacy mode) or stored value malformed;
+			// treat as no cache and not dismissed.
 		}
-		if (dismissed) return;
 
-		// Short delay so the page paints first; the prompt feels like a
-		// response to "you've arrived at a location-first site" rather
-		// than a blocking modal that fires before any content shows.
-		const timer = setTimeout(() => {
+		// Previously denied: never auto-prompt again. Manual button still works.
+		if (dismissed) {
+			clearGeoLoadingState();
+			return;
+		}
+
+		// Return visit with cached coords: the inline script has already set
+		// data-geo="loading" so the skeleton is on screen. Refetch fresh data
+		// for that location and clear the attribute once we have it. The
+		// answer will appear with no flash because the user never saw the
+		// SSR'd default — CSS hid it before first paint.
+		if (cached) {
+			fetchPollenForCoords(cached.lat, cached.lon).finally(clearGeoLoadingState);
+			const fallback = setTimeout(clearGeoLoadingState, SKELETON_FALLBACK_MS);
+			return () => clearTimeout(fallback);
+		}
+
+		// First visit, no cache. We deliberately don't skeleton here: the
+		// SSR'd default is fine to show immediately (Googlebot indexes it
+		// without ambiguity), and granting permission still triggers the
+		// override swap. Worst case is the same data refresh users had
+		// before the cache landed — no regression.
+		const promptTimer = setTimeout(() => {
 			useMyLocation({ silent: true });
 		}, AUTO_PROMPT_DELAY_MS);
-		return () => clearTimeout(timer);
+		return () => clearTimeout(promptTimer);
 	});
+
+	async function fetchPollenForCoords(lat: number, lon: number): Promise<void> {
+		inflight?.abort();
+		const controller = new AbortController();
+		inflight = controller;
+		try {
+			const params = new URLSearchParams({
+				lat: roundToBucket(lat),
+				lon: roundToBucket(lon)
+			});
+			const res = await fetch(`/api/pollen?${params}`, { signal: controller.signal });
+			if (!res.ok) throw new Error(`api ${res.status}`);
+			const next = (await res.json()) as PollenReading;
+			override = next;
+		} catch (err) {
+			if (err instanceof DOMException && err.name === 'AbortError') return;
+			// Silent fail — fall through to the SSR'd default. Cache stays
+			// intact so the next visit can try again.
+		} finally {
+			if (inflight === controller) inflight = null;
+		}
+	}
 
 	async function useMyLocation(options: { silent?: boolean } = {}) {
 		if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -85,6 +153,16 @@
 			if (!res.ok) throw new Error(`api ${res.status}`);
 			const next = (await res.json()) as PollenReading;
 			override = next;
+			// Cache the raw coords (not the bucketed ones) so a subsequent
+			// visit can skip the prompt and skeleton-then-fetch directly.
+			try {
+				localStorage.setItem(
+					LAST_LOCATION_KEY,
+					JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+				);
+			} catch {
+				// Storage denied; the override sticks for this session anyway.
+			}
 		} catch (err) {
 			if (err instanceof DOMException && err.name === 'AbortError') return;
 
@@ -146,7 +224,19 @@
 	{@html `<script type="application/ld+json">${jsonLdScript(homepageJsonLd())}</script>`}
 </svelte:head>
 
-<AnswerView {reading} />
+<!--
+	Both shells render unconditionally. Visibility is driven by the
+	html[data-geo="loading"] attribute (set by the inline script in app.html
+	for returning visitors with cached coords, cleared by JS once the
+	override resolves). This avoids any flash between SSR and hydration:
+	the user only ever sees the right state for that page load.
+-->
+<div class="answer-shell">
+	<AnswerView {reading} />
+</div>
+<div class="skeleton-shell">
+	<SkeletonAnswer />
+</div>
 
 <section class="search-zone" aria-label="Look up a different area">
 	<h2>Search any UK postcode or town</h2>
@@ -176,6 +266,28 @@
 {/if}
 
 <style>
+	/*
+		Default state: skeleton hidden, answer visible. Used by first-time
+		visitors, deniers, and any client without the inline script (e.g.
+		JS disabled, CSP blocking). All paths see the SSR default content.
+	*/
+	.skeleton-shell {
+		display: none;
+	}
+
+	/*
+		Cached-grant state: inline script in app.html set this attribute
+		synchronously before first paint. CSS swaps which shell is visible
+		so the user never sees the SSR'd IP-based default flash through
+		before their cached-location data arrives.
+	*/
+	:global(html[data-geo='loading']) .answer-shell {
+		display: none;
+	}
+	:global(html[data-geo='loading']) .skeleton-shell {
+		display: block;
+	}
+
 	.note {
 		margin-top: var(--sp-5);
 		font-size: var(--fs-sm);
