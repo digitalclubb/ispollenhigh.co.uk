@@ -30,7 +30,10 @@ const config = {
 				'connect-src': ['self', 'https://vitals.vercel-insights.com'],
 				'frame-ancestors': ['none'],
 				'base-uri': ['self'],
-				'form-action': ['self']
+				'form-action': ['self'],
+				// Browsers POST violation reports here. Logged via Vercel
+				// function logs so we hear about CSP breakage early.
+				'report-uri': ['/api/csp-report']
 			}
 		}
 	}

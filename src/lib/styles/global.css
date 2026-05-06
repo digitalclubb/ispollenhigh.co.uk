@@ -79,7 +79,8 @@ main {
 	.skip-link,
 	form[role="search"],
 	nav[aria-label="Site information"],
-	aside[aria-label="Install ispollenhigh"] {
+	aside[aria-label="Install ispollenhigh"],
+	aside[aria-label="Site updated"] {
 		display: none !important;
 	}
 }
