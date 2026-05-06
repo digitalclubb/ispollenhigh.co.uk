@@ -1,0 +1,29 @@
+node_modules
+.DS_Store
+
+# build outputs
+.svelte-kit
+build
+dist
+.vercel
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# env
+.env
+.env.*
+!.env.example
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+
+# claude per-project local settings
+.claude/settings.local.json

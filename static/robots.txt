@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /q
+Disallow: /api/
+
+Sitemap: https://ispollenhigh.co.uk/sitemap.xml
