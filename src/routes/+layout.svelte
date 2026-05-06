@@ -5,10 +5,12 @@
 </script>
 
 <svelte:head>
-	<title>ispollenhigh — pollen forecast for the UK</title>
-	<meta
-		name="description"
-		content="A simple answer to the only question that matters during hayfever season. Is pollen high in your area today?"
+	<link
+		rel="preload"
+		href="/fonts/MonaSans.woff2"
+		as="font"
+		type="font/woff2"
+		crossorigin="anonymous"
 	/>
 </svelte:head>
 
@@ -19,7 +21,13 @@
 </main>
 
 <footer>
-	<small>ispollenhigh — phase 0 scaffolding. Real site coming.</small>
+	<p class="legal">
+		<small>
+			Pollen data: Google Pollen API and CAMS via Open-Meteo. Forecasts are
+			indicative. ispollenhigh.co.uk is independent. We are not affiliated with
+			the Met Office.
+		</small>
+	</p>
 </footer>
 
 <style>
@@ -31,5 +39,10 @@
 		font-size: var(--fs-sm);
 		border-top: 1px solid var(--rule);
 		margin-top: var(--sp-9);
+	}
+
+	.legal {
+		max-width: 60ch;
+		line-height: var(--lh-base);
 	}
 </style>

@@ -3,12 +3,22 @@
  * Editorial weather-almanac feel: paper, ink, confident colour-per-state.
  */
 
+@font-face {
+	font-family: "Mona Sans";
+	src: url("/fonts/MonaSans.woff2") format("woff2-variations");
+	font-weight: 200 900;
+	font-style: normal;
+	font-display: swap;
+}
+
 :root {
-	/* Type stack. Phase 1 will add Mona Sans variable as --font-display loaded
-	   from /static/fonts and override these values. */
+	/* "Mona Sans" loads from /static/fonts. Until it loads, the system stack
+	   takes over and pages remain readable. font-display: swap means the
+	   first paint is never blocked. */
 	--font-display:
-		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	--font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		"Mona Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-body:
+		"Mona Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	--font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
 	/* Type scale. Base 1rem = 16px. */
