@@ -22,7 +22,10 @@
 		<p class="level-word">{levelLabel(reading.level)}</p>
 	</header>
 
-	<p class="numeral" aria-hidden="true">{reading.indexValue}</p>
+	<p class="numeral" aria-hidden="true">
+		<span class="numeral-value">{reading.indexValue}</span>
+		<span class="numeral-scale">/5</span>
+	</p>
 	<p class="visually-hidden">Index value {reading.indexValue} of 5.</p>
 
 	{#if speciesText}
@@ -97,12 +100,21 @@
 	.numeral {
 		font-family: var(--font-display);
 		font-size: clamp(4rem, 18cqi, 8rem);
-		font-weight: var(--weight-display);
+		font-weight: var(--weight-bold);
 		line-height: 0.85;
 		letter-spacing: var(--tracking-tight);
 		color: var(--accent);
 		margin-block: auto var(--sp-2);
 		font-feature-settings: 'tnum';
+		display: flex;
+		align-items: baseline;
+		gap: 0.06em;
+	}
+
+	.numeral-scale {
+		font-size: 0.45em;
+		font-weight: var(--weight-medium);
+		opacity: 0.55;
 	}
 
 	.species {

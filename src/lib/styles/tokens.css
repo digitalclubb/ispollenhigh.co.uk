@@ -30,7 +30,7 @@
 	--fs-xl: 2rem;
 	--fs-2xl: 3rem;
 	--fs-3xl: 4.5rem;
-	--fs-display: clamp(3rem, 14vw, 9rem);
+	--fs-display: clamp(2.75rem, 9vw, 6rem);
 
 	--lh-tight: 1.05;
 	--lh-snug: 1.2;
@@ -85,12 +85,14 @@
 	--level-moderate-bg: #f3e2bc;
 	--level-moderate-accent: #c58a1f;
 
+	/* High and very-high backgrounds are slightly more saturated than the
+	   low/moderate steps so they hold their presence on uncalibrated screens. */
 	--level-high-fg: #4d1f0e;
-	--level-high-bg: #f2d2bd;
+	--level-high-bg: #f3c8b0;
 	--level-high-accent: #b6471f;
 
 	--level-very-high-fg: #3a0d0c;
-	--level-very-high-bg: #e9c3bd;
+	--level-very-high-bg: #ebb6ae;
 	--level-very-high-accent: #7a1b17;
 
 	/* Brand accent equals "high" on the level scale. */

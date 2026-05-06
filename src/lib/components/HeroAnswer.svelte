@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PollenLevel } from '$lib/types/pollen';
-	import { longDate, verdict } from '$lib/utils/format';
+	import { verdict } from '$lib/utils/format';
 
 	type Props = {
 		level: PollenLevel;
@@ -10,14 +10,25 @@
 
 	let { level, locationName, validFor }: Props = $props();
 
-	let text = $derived(verdict(level, locationName));
-	let date = $derived(longDate(validFor));
-	let highlight = $derived(level === 'high' || level === 'very-high');
+	const text = $derived(verdict(level, locationName));
+
+	/**
+	 * Short masthead-style date stamp ("Tuesday, 6 May") rather than the full
+	 * year. The H1 already establishes that this is a forecast, so the kicker
+	 * just dates it.
+	 */
+	const date = $derived(
+		new Intl.DateTimeFormat('en-GB', {
+			weekday: 'long',
+			day: 'numeric',
+			month: 'long'
+		}).format(new Date(validFor))
+	);
 </script>
 
 <header class="hero" data-level={level}>
-	<p class="kicker">Pollen forecast for {date}</p>
-	<h1 class:highlight>{text}</h1>
+	<p class="kicker">{date}</p>
+	<h1>{text}</h1>
 </header>
 
 <style>
@@ -37,18 +48,28 @@
 	h1 {
 		font-family: var(--font-display);
 		font-size: var(--fs-display);
-		font-weight: var(--weight-display);
+		font-weight: var(--weight-bold);
 		line-height: var(--lh-tight);
 		letter-spacing: var(--tracking-tight);
 		color: var(--ink);
 		max-width: 16ch;
 	}
 
-	h1.highlight {
+	/*
+	 * Headline colour cycles through the level palette so the reassuring
+	 * cases read calm and the alarming cases read urgent. None and very-low
+	 * stay neutral ink because there is nothing to flag.
+	 */
+	[data-level='low'] h1 {
+		color: var(--level-low-accent);
+	}
+	[data-level='moderate'] h1 {
+		color: var(--level-moderate-accent);
+	}
+	[data-level='high'] h1 {
 		color: var(--level-high-accent);
 	}
-
-	[data-level='very-high'] h1.highlight {
+	[data-level='very-high'] h1 {
 		color: var(--level-very-high-accent);
 	}
 </style>
