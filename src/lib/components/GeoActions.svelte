@@ -3,15 +3,28 @@
 		locationName: string;
 		onUseLocation: () => void;
 		busy: boolean;
+		/**
+		 * True when the location was inferred from the request IP rather than
+		 * the user granting browser geolocation. We surface this so users
+		 * understand why the answer might be for the wrong area.
+		 */
+		approximate?: boolean;
 	};
 
-	let { locationName, onUseLocation, busy }: Props = $props();
+	let { locationName, onUseLocation, busy, approximate = false }: Props = $props();
 </script>
 
 <section class="geo">
-	<p class="current">
-		Showing pollen for <strong>{locationName}</strong>.
-	</p>
+	<div class="current">
+		<p>
+			Showing pollen for <strong>{locationName}</strong>.
+		</p>
+		{#if approximate}
+			<p class="caveat">
+				This is approximate, based on your network. Tap below for your exact area.
+			</p>
+		{/if}
+	</div>
 
 	<button
 		type="button"
@@ -36,8 +49,18 @@
 	}
 
 	.current {
+		display: flex;
+		flex-direction: column;
+		gap: var(--sp-1);
+	}
+
+	.current p {
 		color: var(--ink-mute);
 		font-size: var(--fs-sm);
+	}
+
+	.caveat {
+		font-style: italic;
 	}
 
 	strong {

@@ -43,6 +43,11 @@
 				<td>Set when you tap "Not now" so we do not nag you. Cleared after 30 days so you get a fresh chance.</td>
 			</tr>
 			<tr>
+				<td>iph_geo_dismissed</td>
+				<td>localStorage</td>
+				<td>Set if you decline the browser's location prompt, so we don't ask again on the next visit.</td>
+			</tr>
+			<tr>
 				<td>shell-* and runtime-* caches</td>
 				<td>Service worker</td>
 				<td>Hold the page shell, your last reading and an offline fallback. They make the site usable when you are offline.</td>

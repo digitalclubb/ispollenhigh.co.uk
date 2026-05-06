@@ -15,16 +15,23 @@
 
 	<h2>Location</h2>
 	<p>
-		If you tap "Use my exact location" your browser passes coordinates to the
-		page. Those coordinates are rounded to roughly five kilometres and sent to
-		our edge function so it can call the pollen API. We do not store them, log
+		When you visit the homepage, your browser is asked whether to share your
+		location. This is so the answer above the fold matches where you actually
+		are rather than where your network address resolves to. If you allow it,
+		your coordinates are rounded to roughly five kilometres and sent to our
+		edge function so it can call the pollen API. We do not store them, log
 		them with anything that identifies you or pass them to anyone except the
 		pollen provider.
 	</p>
 	<p>
-		If you do not share location, our server reads your approximate area from
-		the geolocation headers that Vercel attaches to your request. We use that
-		to render the homepage answer once. We do not store it.
+		If you decline, we use a rough city-level guess from your network address
+		instead. We use that to render the homepage answer once and then we do
+		not store it. We also remember your decline locally so we won't ask again
+		on future visits.
+	</p>
+	<p>
+		Per-location pages like /london or /sw never trigger the location
+		prompt. Those pages are explicit about which area they cover.
 	</p>
 
 	<h2>Analytics</h2>

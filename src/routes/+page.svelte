@@ -9,7 +9,8 @@
 	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
 
-	onMount(() => markAnswerRendered());
+	const GEO_DISMISSED_KEY = 'iph_geo_dismissed';
+	const AUTO_PROMPT_DELAY_MS = 400;
 
 	let { data }: { data: PageData } = $props();
 	const notFoundQuery = $derived(page.url.searchParams.get('notfound'));
@@ -20,13 +21,45 @@
 	let override = $state<PollenReading | null>(null);
 	const reading = $derived<PollenReading>(override ?? data.reading);
 
+	// The server-rendered location is an IP-based guess via Vercel geo
+	// headers and is often miles off (Twickenham resolves to Hackney for
+	// many UK ISPs). Once the user grants browser geolocation we have
+	// proper coords and the caveat goes away.
+	const approximate = $derived(override === null);
+
 	let busy = $state(false);
 	let geoError = $state<string | null>(null);
 	let inflight: AbortController | null = null;
 
-	async function useMyLocation() {
+	onMount(() => {
+		markAnswerRendered();
+
+		// Auto-request browser geolocation on first paint. Skipped if the
+		// browser has no geolocation API, or if the user previously denied
+		// permission (we remember to avoid pestering). Per-location pages
+		// (/london, /sw etc.) don't run this — those are explicit.
+		if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+		let dismissed = false;
+		try {
+			dismissed = localStorage.getItem(GEO_DISMISSED_KEY) !== null;
+		} catch {
+			// localStorage may be denied in privacy mode; treat as not dismissed.
+		}
+		if (dismissed) return;
+
+		// Short delay so the page paints first; the prompt feels like a
+		// response to "you've arrived at a location-first site" rather
+		// than a blocking modal that fires before any content shows.
+		const timer = setTimeout(() => {
+			useMyLocation({ silent: true });
+		}, AUTO_PROMPT_DELAY_MS);
+		return () => clearTimeout(timer);
+	});
+
+	async function useMyLocation(options: { silent?: boolean } = {}) {
 		if (typeof navigator === 'undefined' || !navigator.geolocation) {
-			geoError = 'Your browser cannot share location.';
+			if (!options.silent) geoError = 'Your browser cannot share location.';
 			return;
 		}
 		inflight?.abort();
@@ -54,8 +87,24 @@
 			override = next;
 		} catch (err) {
 			if (err instanceof DOMException && err.name === 'AbortError') return;
-			const msg = err instanceof GeolocationPositionError ? geolocationMessage(err.code) : null;
-			geoError = msg ?? 'We could not get your location. Try the search instead.';
+
+			// Remember permanent denials so we don't auto-prompt again on
+			// future visits. Manual button retry still works (and will fail
+			// fast at the browser layer, surfacing the message below).
+			if (err instanceof GeolocationPositionError && err.code === 1) {
+				try {
+					localStorage.setItem(GEO_DISMISSED_KEY, String(Date.now()));
+				} catch {
+					// Storage denied; nothing to remember. Auto-prompt may fire
+					// again next visit but the browser will keep refusing.
+				}
+			}
+
+			if (!options.silent) {
+				const msg =
+					err instanceof GeolocationPositionError ? geolocationMessage(err.code) : null;
+				geoError = msg ?? 'We could not get your location. Try the search instead.';
+			}
 		} finally {
 			if (inflight === controller) inflight = null;
 			busy = false;
@@ -109,7 +158,12 @@
 	<Search />
 </section>
 
-<GeoActions locationName={reading.location.name} onUseLocation={useMyLocation} {busy} />
+<GeoActions
+	locationName={reading.location.name}
+	onUseLocation={() => useMyLocation()}
+	{busy}
+	{approximate}
+/>
 
 {#if geoError}
 	<p class="note" role="status">{geoError}</p>
