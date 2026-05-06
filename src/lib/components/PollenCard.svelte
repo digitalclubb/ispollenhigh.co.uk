@@ -117,7 +117,11 @@
 	.numeral-scale {
 		font-size: 0.45em;
 		font-weight: var(--weight-medium);
-		opacity: 0.55;
+		/* Use the dark text-on-bg colour rather than a translucent accent so
+		   contrast holds at 3:1 minimum on the lighter card backgrounds.
+		   Lighthouse measured 1.99-2.06 with the previous opacity-based
+		   approach. */
+		color: var(--fg);
 	}
 
 	.species {

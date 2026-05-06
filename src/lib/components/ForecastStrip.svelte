@@ -41,55 +41,41 @@
 	}
 </script>
 
-<ol role="tablist" aria-label="Five-day outlook">
+<!--
+	Flat tablist: <div role="tablist"> with <button role="tab"> children.
+	WAI-ARIA requires tabs to be direct children of a tablist; a previous
+	<ol>/<li> wrapping broke aria-required-children + aria-required-parent
+	in axe and dragged the listitem audit down too. Drop the list semantics
+	(they were redundant given the tablist role anyway).
+-->
+<div role="tablist" aria-label="Five-day outlook" class="strip">
 	{#each forecast as day, i (day.date)}
-		<li data-level={day.overall.level} class:selected={i === selectedIndex}>
-			<button
-				bind:this={tabs[i]}
-				type="button"
-				role="tab"
-				id="{tabIdPrefix}-{i}"
-				aria-controls={panelId}
-				aria-selected={i === selectedIndex}
-				tabindex={i === selectedIndex ? 0 : -1}
-				aria-label={`${i === 0 ? 'Today' : shortWeekday(day.date)}, pollen ${levelLabel(day.overall.level).toLowerCase()}`}
-				onclick={() => onSelect(i)}
-				onkeydown={(e) => onKeydown(e, i)}
-			>
-				<span class="day">{i === 0 ? 'Today' : shortWeekday(day.date)}</span>
-				<span class="bar" aria-hidden="true"></span>
-				<span class="lvl">{levelLabel(day.overall.level)}</span>
-			</button>
-		</li>
+		<button
+			bind:this={tabs[i]}
+			type="button"
+			role="tab"
+			id="{tabIdPrefix}-{i}"
+			data-level={day.overall.level}
+			class:selected={i === selectedIndex}
+			aria-controls={panelId}
+			aria-selected={i === selectedIndex}
+			tabindex={i === selectedIndex ? 0 : -1}
+			onclick={() => onSelect(i)}
+			onkeydown={(e) => onKeydown(e, i)}
+		>
+			<span class="day">{i === 0 ? 'Today' : shortWeekday(day.date)}</span>
+			<span class="bar" aria-hidden="true"></span>
+			<span class="lvl">{levelLabel(day.overall.level)}</span>
+		</button>
 	{/each}
-</ol>
+</div>
 
 <style>
-	ol {
+	.strip {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		gap: var(--sp-2);
-		list-style: none;
-		padding: 0;
 		margin-top: var(--sp-7);
-	}
-
-	li {
-		--accent: var(--level-none-accent);
-	}
-
-	li[data-level='very-low'],
-	li[data-level='low'] {
-		--accent: var(--level-low-accent);
-	}
-	li[data-level='moderate'] {
-		--accent: var(--level-moderate-accent);
-	}
-	li[data-level='high'] {
-		--accent: var(--level-high-accent);
-	}
-	li[data-level='very-high'] {
-		--accent: var(--level-very-high-accent);
 	}
 
 	button {
@@ -112,13 +98,28 @@
 		transition:
 			background var(--ease-quick),
 			outline-color var(--ease-quick);
+		--accent: var(--level-none-accent);
+	}
+
+	button[data-level='very-low'],
+	button[data-level='low'] {
+		--accent: var(--level-low-accent);
+	}
+	button[data-level='moderate'] {
+		--accent: var(--level-moderate-accent);
+	}
+	button[data-level='high'] {
+		--accent: var(--level-high-accent);
+	}
+	button[data-level='very-high'] {
+		--accent: var(--level-very-high-accent);
 	}
 
 	button:hover {
 		background: color-mix(in srgb, var(--paper-warm) 60%, var(--paper));
 	}
 
-	li.selected button {
+	button.selected {
 		background: var(--paper);
 		outline: 1.5px solid var(--ink);
 		outline-offset: -1.5px;
@@ -134,15 +135,14 @@
 		color: var(--ink-soft);
 	}
 
-	li.selected .day {
+	button.selected .day {
 		color: var(--ink);
 	}
 
 	/* Mini-bar height grows with the level. None gets a smaller floor so
 	   it reads as visibly "less" than very-low. Heights are level-keyed
-	   via the data-level attribute on the parent li, which lets us drop
-	   inline style attributes (and the 'unsafe-inline' style-src we'd
-	   otherwise need in CSP). */
+	   via the data-level attribute on the button, which lets us avoid
+	   inline style attributes (and so the strict 'style-src' CSP holds). */
 	.bar {
 		display: block;
 		width: 1.25rem;
@@ -151,22 +151,22 @@
 		align-self: end;
 	}
 
-	li[data-level='none'] .bar {
+	button[data-level='none'] .bar {
 		height: 0.375rem;
 	}
-	li[data-level='very-low'] .bar {
+	button[data-level='very-low'] .bar {
 		height: 0.625rem;
 	}
-	li[data-level='low'] .bar {
+	button[data-level='low'] .bar {
 		height: 1.25rem;
 	}
-	li[data-level='moderate'] .bar {
+	button[data-level='moderate'] .bar {
 		height: 1.875rem;
 	}
-	li[data-level='high'] .bar {
+	button[data-level='high'] .bar {
 		height: 2.5rem;
 	}
-	li[data-level='very-high'] .bar {
+	button[data-level='very-high'] .bar {
 		height: 3.125rem;
 	}
 
@@ -175,9 +175,19 @@
 		font-size: var(--fs-xs);
 	}
 
+	/* Below 480px the level word is hidden visually but kept in the
+	   accessibility tree so screen readers can still announce it. */
 	@media (max-width: 480px) {
 		.lvl {
-			display: none;
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
 		}
 		button {
 			min-height: 6.5rem;
