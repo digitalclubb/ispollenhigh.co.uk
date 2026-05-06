@@ -94,7 +94,10 @@
 		font-weight: var(--weight-medium);
 		letter-spacing: var(--tracking-loose);
 		text-transform: uppercase;
-		color: var(--accent);
+		/* --fg is the dark, level-keyed text colour. Using it here keeps the
+		   label readable on the tinted card background (AA pass) while still
+		   carrying the level association via the wider card colour. */
+		color: var(--fg);
 	}
 
 	.numeral {

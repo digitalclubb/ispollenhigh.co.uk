@@ -61,3 +61,25 @@ main {
 	background: var(--ink);
 	color: var(--paper);
 }
+
+/* Print: keep the level-coded backgrounds so the answer is legible on
+   paper, drop the install prompt and search affordances (no use offline),
+   ensure white background for ink savings. */
+@media print {
+	body {
+		background-image: none !important;
+		background-color: #fff !important;
+	}
+
+	* {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.skip-link,
+	form[role="search"],
+	nav[aria-label="Site information"],
+	aside[aria-label="Install ispollenhigh"] {
+		display: none !important;
+	}
+}

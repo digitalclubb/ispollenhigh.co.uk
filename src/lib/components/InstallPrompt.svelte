@@ -98,7 +98,7 @@
 		background: var(--ink);
 		color: var(--paper);
 		border-radius: var(--radius-lg);
-		box-shadow: 0 12px 32px rgb(15 20 16 / 0.16);
+		box-shadow: var(--shadow-strong);
 		z-index: var(--z-modal);
 	}
 
@@ -114,8 +114,9 @@
 	}
 
 	.btn {
-		min-height: 2.5rem;
-		padding-inline: var(--sp-4);
+		/* 2.75rem (44px) hits the WCAG 2.5.8 minimum target size. */
+		min-height: 2.75rem;
+		padding: var(--sp-2) var(--sp-4);
 		border-radius: var(--radius-md);
 		border: 1px solid var(--paper);
 		background: var(--paper);
@@ -139,6 +140,6 @@
 
 	.btn.ghost:hover,
 	.btn.ghost:focus-visible {
-		background: rgb(250 247 242 / 0.12);
+		background: color-mix(in srgb, var(--paper) 12%, transparent);
 	}
 </style>

@@ -195,7 +195,7 @@
 		background: var(--paper);
 		border: 1px solid var(--ink);
 		border-radius: var(--radius-md);
-		box-shadow: 0 12px 32px rgb(15 20 16 / 0.08);
+		box-shadow: var(--shadow-soft);
 		z-index: var(--z-overlay);
 	}
 
@@ -227,7 +227,7 @@
 
 	li[aria-selected='true'] .opt-type,
 	li:hover .opt-type {
-		color: rgb(250 247 242 / 0.7);
+		color: color-mix(in srgb, var(--paper) 70%, transparent);
 	}
 
 	.btn {

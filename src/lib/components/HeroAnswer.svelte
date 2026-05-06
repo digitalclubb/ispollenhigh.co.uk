@@ -26,7 +26,13 @@
 	);
 </script>
 
-<header class="hero" data-level={level}>
+<!--
+	aria-live="polite" + aria-atomic="true" so screen readers announce the
+	new verdict when geolocation override flips the H1 mid-page. Initial
+	render is not announced (that's how aria-live works) so this only kicks
+	in for the user-triggered location refresh.
+-->
+<header class="hero" data-level={level} aria-live="polite" aria-atomic="true">
 	<p class="kicker">{date}</p>
 	<h1>{text}</h1>
 </header>

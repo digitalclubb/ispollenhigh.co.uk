@@ -9,15 +9,17 @@
 	let { forecast }: Props = $props();
 
 	function bar(level: PollenLevel): number {
+		// "none" and "very-low" both deserve to be visible but they should
+		// not look identical; very-low gets the next discrete step up.
 		const idx: Record<PollenLevel, number> = {
-			none: 0,
+			none: 0.6,
 			'very-low': 1,
 			low: 2,
 			moderate: 3,
 			high: 4,
 			'very-high': 5
 		};
-		return Math.max(idx[level], 1);
+		return idx[level];
 	}
 </script>
 
@@ -91,13 +93,13 @@
 		color: var(--ink);
 	}
 
-	/* Mini-bar height grows with the level (1 = none, 5 = very-high). The
-	   width is constant so the eye reads the bars as a row. */
+	/* Mini-bar height grows with the level (0.6 = none, 5 = very-high).
+	   The width is constant so the eye reads the bars as a row. */
 	.bar {
 		display: block;
 		width: 1.25rem;
 		height: calc(var(--height) * 0.625rem);
-		min-height: 0.625rem;
+		min-height: 0.375rem;
 		max-height: 3.5rem;
 		border-radius: 999px;
 		background: var(--accent);
