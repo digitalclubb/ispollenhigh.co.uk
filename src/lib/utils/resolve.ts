@@ -76,11 +76,14 @@ export function suggestLocations(query: string, limit = 6): Location[] {
 function scoreMatch(loc: Location, q: string): number {
 	const name = loc.name.toLowerCase();
 	const slug = loc.slug.toLowerCase();
-	if (slug === q) return 100;
-	if (name === q) return 90;
+	// typeBonus on every branch so that when two locations tie at the same
+	// kind of match (e.g. London the city and London the region both have
+	// slug "london"), the city wins consistently.
+	if (slug === q) return 100 + typeBonus(loc);
+	if (name === q) return 90 + typeBonus(loc);
 	if (slug.startsWith(q)) return 70 + typeBonus(loc);
 	if (name.startsWith(q)) return 60 + typeBonus(loc);
-	if (loc.aliases?.some((a) => a.toLowerCase().startsWith(q))) return 55;
+	if (loc.aliases?.some((a) => a.toLowerCase().startsWith(q))) return 55 + typeBonus(loc);
 	if (name.includes(q)) return 30 + typeBonus(loc);
 	return 0;
 }

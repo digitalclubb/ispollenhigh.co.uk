@@ -10,7 +10,9 @@
 const STEP = 0.05;
 
 export function roundCoord(value: number): number {
-	return Math.round(value / STEP) * STEP;
+	// Snap to the 0.05 grid, then round to 2 d.p. to flush the IEEE 754
+	// noise (e.g. 0.05 * -3 = -0.15000000000000002 without this).
+	return Math.round(Math.round(value / STEP) * STEP * 100) / 100;
 }
 
 export function bucketCoords(lat: number, lon: number): { lat: number; lon: number } {

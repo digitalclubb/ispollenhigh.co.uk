@@ -6,7 +6,9 @@
 	import type { PollenReading } from '$lib/types/pollen';
 	import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
 	import LocationCopy from './LocationCopy.svelte';
+	import NearbyLocations from './NearbyLocations.svelte';
 	import Search from './Search.svelte';
+	import ShareButton from './ShareButton.svelte';
 
 	type Props = {
 		reading: PollenReading;
@@ -46,7 +48,13 @@
 
 <AnswerView {reading} />
 
+<div class="share-row">
+	<ShareButton title={`Is pollen high in ${location.name}?`} url={canonical} />
+</div>
+
 <LocationCopy {location} />
+
+<NearbyLocations origin={location} />
 
 <section class="search-zone" aria-label="Look up another location">
 	<h2>Check another area</h2>
@@ -54,6 +62,10 @@
 </section>
 
 <style>
+	.share-row {
+		margin-top: var(--sp-6);
+	}
+
 	.search-zone {
 		margin-top: var(--sp-7);
 		padding-top: var(--sp-6);

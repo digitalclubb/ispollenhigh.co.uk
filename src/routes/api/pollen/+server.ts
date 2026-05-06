@@ -1,6 +1,7 @@
 import { json, redirect } from '@sveltejs/kit';
 import { parseCoords } from '$lib/server/cache-key';
 import { getPollen } from '$lib/server/pollen-service';
+import { nearestKnown } from '$lib/utils/geo';
 import type { RequestHandler } from './$types';
 
 /**
@@ -35,10 +36,15 @@ export const GET: RequestHandler = async ({ url }) => {
 		redirect(308, target);
 	}
 
+	// Snap to the nearest known place so the H1 reads "Pollen is high in
+	// London today" rather than "in your area today". Falls back to the
+	// vague label only if the registry somehow has no candidates.
+	const nearest = nearestKnown(coords.lat, coords.lon);
+
 	const reading = await getPollen({
 		lat: coords.lat,
 		lon: coords.lon,
-		locationName: 'your area'
+		locationName: nearest?.name ?? 'your area'
 	});
 
 	return json(reading, {
