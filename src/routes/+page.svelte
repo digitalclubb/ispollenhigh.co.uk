@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import ForecastStrip from '$lib/components/ForecastStrip.svelte';
 	import GeoActions from '$lib/components/GeoActions.svelte';
 	import HeroAnswer from '$lib/components/HeroAnswer.svelte';
 	import PollenCard from '$lib/components/PollenCard.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	const notFoundQuery = $derived(page.url.searchParams.get('notfound'));
 
 	// `override` holds the locally-fetched reading after the user grants
 	// geolocation. `reading` falls through to the server-rendered data on
@@ -91,6 +94,16 @@
 
 <ForecastStrip forecast={reading.forecast} />
 
+<section class="search-zone" aria-label="Look up a different area">
+	<h2>Search any UK postcode or town</h2>
+	{#if notFoundQuery}
+		<p class="note" role="status">
+			We could not find a match for <strong>{notFoundQuery}</strong>. Try a postcode like SW1 or a town name.
+		</p>
+	{/if}
+	<Search />
+</section>
+
 <GeoActions locationName={reading.location.name} onUseLocation={useMyLocation} {busy} />
 
 {#if geoError}
@@ -124,5 +137,22 @@
 
 	.note.muted {
 		color: var(--ink-mute);
+	}
+
+	.search-zone {
+		margin-top: var(--sp-7);
+		padding-top: var(--sp-6);
+		border-top: 1px solid var(--rule);
+	}
+
+	.search-zone h2 {
+		font-size: var(--fs-md);
+		font-weight: var(--weight-medium);
+		color: var(--ink-mute);
+		margin-bottom: var(--sp-4);
+	}
+
+	.search-zone .note {
+		margin-bottom: var(--sp-4);
 	}
 </style>
