@@ -1,6 +1,7 @@
 import { json, redirect } from '@sveltejs/kit';
 import { parseCoords } from '$lib/server/cache-key';
 import { getPollen } from '$lib/server/pollen-service';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import { nearestKnown } from '$lib/utils/geo';
 import type { RequestHandler } from './$types';
 
@@ -13,6 +14,10 @@ import type { RequestHandler } from './$types';
  * the CDN keys on the bucket. Without this an attacker can defeat the cache
  * (and burn upstream API quota) by sending arbitrarily many distinct
  * floating-point coordinates that all resolve to the same bucket.
+ *
+ * Rate-limited to 60 requests/minute per IP per region. The CDN cache
+ * absorbs most legitimate traffic so this only kicks in for cache-busting
+ * patterns or someone scraping the data.
  */
 
 export const config = {
@@ -21,7 +26,21 @@ export const config = {
 
 const COORD_PRECISION = 2;
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, request }) => {
+	const limit = checkRateLimit(`pollen:${clientKey(request.headers)}`);
+	if (!limit.allowed) {
+		return json(
+			{ error: 'rate_limited' },
+			{
+				status: 429,
+				headers: {
+					'Retry-After': String(limit.resetSeconds),
+					'Cache-Control': 'no-store'
+				}
+			}
+		);
+	}
+
 	const latRaw = url.searchParams.get('lat');
 	const lonRaw = url.searchParams.get('lon');
 	const coords = parseCoords(latRaw, lonRaw);
@@ -38,7 +57,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	// Snap to the nearest known place so the H1 reads "Pollen is high in
 	// London today" rather than "in your area today". Falls back to the
-	// vague label only if the registry somehow has no candidates.
+	// vague label when the user is over the 50 km cap from any centroid.
 	const nearest = nearestKnown(coords.lat, coords.lon);
 
 	const reading = await getPollen({

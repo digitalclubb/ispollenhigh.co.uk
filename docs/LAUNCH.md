@@ -8,6 +8,7 @@ The site is feature-complete for v1. This doc is the runbook for going live on `
 - [ ] In Project Settings → Build & Development, framework preset is auto-detected as SvelteKit; leave as default
 - [ ] In Project Settings → Domains, add `ispollenhigh.co.uk` and `www.ispollenhigh.co.uk`
 - [ ] Set the apex (`ispollenhigh.co.uk`) as the canonical domain. `www.` redirects to apex
+- [ ] In the Vercel domain settings, set `www.ispollenhigh.co.uk` to **No redirect**. The www-to-apex 308 lives in `vercel.json` so it's version-controlled. If both fire you get a double-redirect (still correct, but wasteful and trips HSTS preload checks)
 - [ ] In Project Settings → Functions, leave region defaults (the `+page.server.ts` files pin `lhr1` themselves)
 
 ## 2. Environment variables

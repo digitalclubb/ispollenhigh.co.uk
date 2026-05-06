@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ForecastDay, PollenLevel } from '$lib/types/pollen';
+	import type { ForecastDay } from '$lib/types/pollen';
 	import { levelLabel, shortWeekday } from '$lib/utils/format';
 
 	type Props = {
@@ -19,20 +19,6 @@
 	}: Props = $props();
 
 	const tabs: HTMLButtonElement[] = $state([]);
-
-	function bar(level: PollenLevel): number {
-		// "none" and "very-low" both deserve to be visible but they should
-		// not look identical; very-low gets the next discrete step up.
-		const idx: Record<PollenLevel, number> = {
-			none: 0.6,
-			'very-low': 1,
-			low: 2,
-			moderate: 3,
-			high: 4,
-			'very-high': 5
-		};
-		return idx[level];
-	}
 
 	/**
 	 * WAI-ARIA tablist with manual activation. Arrow keys move focus between
@@ -71,7 +57,7 @@
 				onkeydown={(e) => onKeydown(e, i)}
 			>
 				<span class="day">{i === 0 ? 'Today' : shortWeekday(day.date)}</span>
-				<span class="bar" aria-hidden="true" style="--height: {bar(day.overall.level)}"></span>
+				<span class="bar" aria-hidden="true"></span>
 				<span class="lvl">{levelLabel(day.overall.level)}</span>
 			</button>
 		</li>
@@ -152,16 +138,36 @@
 		color: var(--ink);
 	}
 
-	/* Mini-bar height grows with the level (0.6 = none, 5 = very-high). */
+	/* Mini-bar height grows with the level. None gets a smaller floor so
+	   it reads as visibly "less" than very-low. Heights are level-keyed
+	   via the data-level attribute on the parent li, which lets us drop
+	   inline style attributes (and the 'unsafe-inline' style-src we'd
+	   otherwise need in CSP). */
 	.bar {
 		display: block;
 		width: 1.25rem;
-		height: calc(var(--height) * 0.625rem);
-		min-height: 0.375rem;
-		max-height: 3.5rem;
 		border-radius: 999px;
 		background: var(--accent);
 		align-self: end;
+	}
+
+	li[data-level='none'] .bar {
+		height: 0.375rem;
+	}
+	li[data-level='very-low'] .bar {
+		height: 0.625rem;
+	}
+	li[data-level='low'] .bar {
+		height: 1.25rem;
+	}
+	li[data-level='moderate'] .bar {
+		height: 1.875rem;
+	}
+	li[data-level='high'] .bar {
+		height: 2.5rem;
+	}
+	li[data-level='very-high'] .bar {
+		height: 3.125rem;
 	}
 
 	.lvl {
