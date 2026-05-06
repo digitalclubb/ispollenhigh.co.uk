@@ -68,21 +68,22 @@ export const CITIES: Location[] = [
 		lon: -2.2426,
 		parentRegion: 'north-west'
 	},
+	// Birmingham, Leeds, Sheffield and Cardiff don't fit any of the 5 phase-2
+	// regions cleanly. parentRegion is left undefined here and assigned in
+	// phase 3 once midlands, yorkshire-and-humber and wales are added.
 	{
 		slug: 'birmingham',
 		name: 'Birmingham',
 		type: 'city',
 		lat: 52.4862,
-		lon: -1.8904,
-		parentRegion: 'south-east'
+		lon: -1.8904
 	},
 	{
 		slug: 'leeds',
 		name: 'Leeds',
 		type: 'city',
 		lat: 53.8008,
-		lon: -1.5491,
-		parentRegion: 'north-west'
+		lon: -1.5491
 	},
 	{
 		slug: 'liverpool',
@@ -121,16 +122,14 @@ export const CITIES: Location[] = [
 		name: 'Cardiff',
 		type: 'city',
 		lat: 51.4816,
-		lon: -3.1791,
-		parentRegion: 'south-west'
+		lon: -3.1791
 	},
 	{
 		slug: 'sheffield',
 		name: 'Sheffield',
 		type: 'city',
 		lat: 53.3811,
-		lon: -1.4701,
-		parentRegion: 'north-west'
+		lon: -1.4701
 	}
 ];
 
@@ -201,8 +200,7 @@ export const POSTCODE_AREAS: Location[] = [
 		name: 'B (Birmingham)',
 		type: 'postcode-area',
 		lat: 52.4862,
-		lon: -1.8904,
-		parentRegion: 'south-east'
+		lon: -1.8904
 	},
 	{
 		slug: 'l',
@@ -217,8 +215,7 @@ export const POSTCODE_AREAS: Location[] = [
 		name: 'LS (Leeds)',
 		type: 'postcode-area',
 		lat: 53.8008,
-		lon: -1.5491,
-		parentRegion: 'north-west'
+		lon: -1.5491
 	},
 	{
 		slug: 'bs',
@@ -249,16 +246,14 @@ export const POSTCODE_AREAS: Location[] = [
 		name: 'CF (Cardiff)',
 		type: 'postcode-area',
 		lat: 51.4816,
-		lon: -3.1791,
-		parentRegion: 'south-west'
+		lon: -3.1791
 	},
 	{
 		slug: 's',
 		name: 'S (Sheffield)',
 		type: 'postcode-area',
 		lat: 53.3811,
-		lon: -1.4701,
-		parentRegion: 'north-west'
+		lon: -1.4701
 	}
 ];
 

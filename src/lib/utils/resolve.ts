@@ -81,7 +81,7 @@ function scoreMatch(loc: Location, q: string): number {
 	if (slug.startsWith(q)) return 70 + typeBonus(loc);
 	if (name.startsWith(q)) return 60 + typeBonus(loc);
 	if (loc.aliases?.some((a) => a.toLowerCase().startsWith(q))) return 55;
-	if (name.includes(q)) return 30;
+	if (name.includes(q)) return 30 + typeBonus(loc);
 	return 0;
 }
 

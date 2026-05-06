@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	});
 
 	setHeaders({
-		'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600'
+		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
 	});
 
 	return { reading, location: region };

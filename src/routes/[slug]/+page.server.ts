@@ -28,8 +28,10 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		locationName: location.name
 	});
 
+	// Match the upstream /api/pollen cache so the page never holds older
+	// data than the data behind it.
 	setHeaders({
-		'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600'
+		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
 	});
 
 	return { reading, location };
