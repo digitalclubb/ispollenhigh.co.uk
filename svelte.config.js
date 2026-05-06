@@ -15,16 +15,25 @@ const config = {
 		// Content Security Policy. `mode: 'auto'` means SvelteKit emits
 		// nonces on dynamic responses and hashes on prerendered ones, so
 		// our inline JSON-LD scripts and Svelte's inline <style> blocks
-		// are covered without hand-managing tokens. We avoid inline
-		// style="..." attributes throughout (they'd require
-		// 'unsafe-inline' or 'unsafe-hashes') so style-src can stay
-		// strict.
+		// are covered without hand-managing tokens.
+		//
+		// 'unsafe-inline' on style-src is needed for inline style="..."
+		// attributes set at runtime (Svelte 5's runtime and the Vercel
+		// Analytics / Speed Insights scripts both do this). Per CSP3
+		// spec, when nonces/hashes are present 'unsafe-inline' is
+		// IGNORED for <style> elements but HONORED for style attributes
+		// (hashes don't apply to attributes anyway). So:
+		//   - <style> blocks stay strict (hashed/nonced)
+		//   - Inline style attributes are allowed
+		//   - script-src stays strict (where it actually matters)
+		// This is the standard pattern for a SvelteKit site with
+		// CSP3-strict scripts.
 		csp: {
 			mode: 'auto',
 			directives: {
 				'default-src': ['self'],
 				'script-src': ['self', 'https://va.vercel-scripts.com'],
-				'style-src': ['self'],
+				'style-src': ['self', 'unsafe-inline'],
 				'font-src': ['self'],
 				'img-src': ['self', 'data:'],
 				'connect-src': ['self', 'https://vitals.vercel-insights.com'],
