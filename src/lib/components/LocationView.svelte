@@ -39,10 +39,7 @@
 	<meta property="og:url" content={canonical} />
 	<meta property="og:type" content="website" />
 	<meta property="og:locale" content="en_GB" />
-	<meta
-		property="og:image"
-		content={`https://ispollenhigh.co.uk/api/og?slug=${location.slug}&type=${location.type}`}
-	/>
+	<meta property="og:image" content="https://ispollenhigh.co.uk/og.png" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />

@@ -55,6 +55,29 @@ A failed liveness monitor means Vercel itself is down or the project is misconfi
 
 **Fix**: The CI workflow runs Lighthouse on every push to main. PR that broke it is the change to revert. Local debugging: `pnpm dlx unlighthouse --site https://your-preview.vercel.app`.
 
+### Dynamic per-location OG images (deferred)
+
+Tried with `@vercel/og` and hit a hard incompatibility: the package
+imports `vc-blob-asset:./Geist-Regular.ttf` for its default font, a
+URL scheme only the Next.js bundler resolves. The SvelteKit Vercel
+adapter fails the deploy with:
+
+```
+The Edge Function "..." is referencing unsupported modules:
+  - vc-blob-asset:./Geist-Regular.ttf
+```
+
+Providing custom fonts to `ImageResponse` doesn't help because the
+unresolvable import sits in the package source itself, not in user
+code. Reverted to a single static `og.png` for v1.
+
+When you want per-location OG images, swap to one of:
+- `og-img` (designed for non-Next.js frameworks)
+- `satori` + `@resvg/resvg-js` directly (more code, full control)
+
+Don't reach for `@vercel/og` again until they ship a framework-
+agnostic build path.
+
 ### Adding Sentry (optional)
 
 Not wired in by default. The Vercel-edge bundler currently drags
