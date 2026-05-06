@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import AnswerView from '$lib/components/AnswerView.svelte';
 	import { type Location, getCanonicalPath } from '$lib/data/locations';
 	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
 	import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
-	import ForecastStrip from './ForecastStrip.svelte';
-	import HeroAnswer from './HeroAnswer.svelte';
 	import LocationCopy from './LocationCopy.svelte';
-	import PollenCard from './PollenCard.svelte';
 	import Search from './Search.svelte';
 
 	type Props = {
@@ -46,19 +44,7 @@
 	{@html `<script type="application/ld+json">${ld}</script>`}
 </svelte:head>
 
-<HeroAnswer
-	level={reading.overall.level}
-	locationName={reading.location.name}
-	validFor={reading.validFor}
-/>
-
-<section class="cards" aria-label="Pollen by type">
-	<PollenCard category="grass" reading={reading.types.grass} />
-	<PollenCard category="tree" reading={reading.types.tree} />
-	<PollenCard category="weed" reading={reading.types.weed} />
-</section>
-
-<ForecastStrip forecast={reading.forecast} />
+<AnswerView {reading} />
 
 <LocationCopy {location} />
 
@@ -68,18 +54,6 @@
 </section>
 
 <style>
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: var(--sp-3);
-	}
-
-	@media (max-width: 720px) {
-		.cards {
-			grid-template-columns: 1fr;
-		}
-	}
-
 	.search-zone {
 		margin-top: var(--sp-7);
 		padding-top: var(--sp-6);

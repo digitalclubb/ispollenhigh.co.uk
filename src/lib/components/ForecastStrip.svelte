@@ -3,10 +3,22 @@
 	import { levelLabel, shortWeekday } from '$lib/utils/format';
 
 	type Props = {
-		forecast: ForecastDay[];
+		forecast: readonly ForecastDay[];
+		selectedIndex: number;
+		onSelect: (index: number) => void;
+		panelId: string;
+		tabIdPrefix?: string;
 	};
 
-	let { forecast }: Props = $props();
+	let {
+		forecast,
+		selectedIndex,
+		onSelect,
+		panelId,
+		tabIdPrefix = 'forecast-tab'
+	}: Props = $props();
+
+	const tabs: HTMLButtonElement[] = $state([]);
 
 	function bar(level: PollenLevel): number {
 		// "none" and "very-low" both deserve to be visible but they should
@@ -21,46 +33,62 @@
 		};
 		return idx[level];
 	}
+
+	/**
+	 * WAI-ARIA tablist with manual activation. Arrow keys move focus between
+	 * tabs but do not commit the selection. The user activates with Enter or
+	 * Space (the default button behaviour) or by clicking. This avoids the
+	 * "every arrow press re-announces the H1" problem that auto-activation
+	 * would cause for screen-reader users exploring the strip.
+	 */
+	function onKeydown(e: KeyboardEvent, index: number) {
+		const total = forecast.length;
+		let next = index;
+		if (e.key === 'ArrowRight') next = Math.min(index + 1, total - 1);
+		else if (e.key === 'ArrowLeft') next = Math.max(index - 1, 0);
+		else if (e.key === 'Home') next = 0;
+		else if (e.key === 'End') next = total - 1;
+		else return;
+
+		e.preventDefault();
+		tabs[next]?.focus();
+	}
 </script>
 
-<section class="strip" aria-label="Five day pollen outlook">
-	<h2 class="visually-hidden">Five-day outlook</h2>
-	<ol>
-		{#each forecast as day, i (day.date)}
-			<li data-level={day.overall.level} class:today={i === 0}>
+<ol role="tablist" aria-label="Five-day outlook">
+	{#each forecast as day, i (day.date)}
+		<li data-level={day.overall.level} class:selected={i === selectedIndex}>
+			<button
+				bind:this={tabs[i]}
+				type="button"
+				role="tab"
+				id="{tabIdPrefix}-{i}"
+				aria-controls={panelId}
+				aria-selected={i === selectedIndex}
+				tabindex={i === selectedIndex ? 0 : -1}
+				aria-label={`${i === 0 ? 'Today' : shortWeekday(day.date)}, pollen ${levelLabel(day.overall.level).toLowerCase()}`}
+				onclick={() => onSelect(i)}
+				onkeydown={(e) => onKeydown(e, i)}
+			>
 				<span class="day">{i === 0 ? 'Today' : shortWeekday(day.date)}</span>
 				<span class="bar" aria-hidden="true" style="--height: {bar(day.overall.level)}"></span>
 				<span class="lvl">{levelLabel(day.overall.level)}</span>
-			</li>
-		{/each}
-	</ol>
-</section>
+			</button>
+		</li>
+	{/each}
+</ol>
 
 <style>
-	.strip {
-		margin-top: var(--sp-7);
-	}
-
 	ol {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		gap: var(--sp-2);
 		list-style: none;
 		padding: 0;
+		margin-top: var(--sp-7);
 	}
 
 	li {
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-		align-items: center;
-		justify-items: center;
-		gap: var(--sp-2);
-		padding: var(--sp-4) var(--sp-2);
-		min-height: 8.5rem;
-		border-radius: var(--radius-md);
-		background: var(--paper-warm);
-		text-align: center;
-		font-size: var(--fs-sm);
 		--accent: var(--level-none-accent);
 	}
 
@@ -78,10 +106,41 @@
 		--accent: var(--level-very-high-accent);
 	}
 
-	li.today {
+	button {
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		align-items: center;
+		justify-items: center;
+		gap: var(--sp-2);
+		width: 100%;
+		padding: var(--sp-4) var(--sp-2);
+		min-height: 8.5rem;
+		border: 0;
+		border-radius: var(--radius-md);
+		background: var(--paper-warm);
+		color: inherit;
+		text-align: center;
+		font-size: var(--fs-sm);
+		font-family: inherit;
+		cursor: pointer;
+		transition:
+			background var(--ease-quick),
+			outline-color var(--ease-quick);
+	}
+
+	button:hover {
+		background: color-mix(in srgb, var(--paper-warm) 60%, var(--paper));
+	}
+
+	li.selected button {
 		background: var(--paper);
 		outline: 1.5px solid var(--ink);
 		outline-offset: -1.5px;
+	}
+
+	button:focus-visible {
+		outline: var(--focus-ring);
+		outline-offset: var(--focus-offset);
 	}
 
 	.day {
@@ -89,12 +148,11 @@
 		color: var(--ink-soft);
 	}
 
-	li.today .day {
+	li.selected .day {
 		color: var(--ink);
 	}
 
-	/* Mini-bar height grows with the level (0.6 = none, 5 = very-high).
-	   The width is constant so the eye reads the bars as a row. */
+	/* Mini-bar height grows with the level (0.6 = none, 5 = very-high). */
 	.bar {
 		display: block;
 		width: 1.25rem;
@@ -115,7 +173,7 @@
 		.lvl {
 			display: none;
 		}
-		li {
+		button {
 			min-height: 6.5rem;
 		}
 	}

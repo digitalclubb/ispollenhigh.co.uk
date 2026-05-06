@@ -183,7 +183,7 @@ export async function fetchOpenMeteoPollen(args: {
 		validFor: today.date,
 		overall: today.overall,
 		types: today.types,
-		forecast,
+		forecast: forecast as [ForecastDay, ...ForecastDay[]],
 		source: 'open-meteo'
 	};
 }

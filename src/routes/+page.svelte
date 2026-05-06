@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import ForecastStrip from '$lib/components/ForecastStrip.svelte';
+	import AnswerView from '$lib/components/AnswerView.svelte';
 	import GeoActions from '$lib/components/GeoActions.svelte';
-	import HeroAnswer from '$lib/components/HeroAnswer.svelte';
-	import PollenCard from '$lib/components/PollenCard.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
@@ -99,19 +97,7 @@
 	{@html `<script type="application/ld+json">${jsonLdScript(homepageJsonLd())}</script>`}
 </svelte:head>
 
-<HeroAnswer
-	level={reading.overall.level}
-	locationName={reading.location.name}
-	validFor={reading.validFor}
-/>
-
-<section class="cards" aria-label="Pollen by type">
-	<PollenCard category="grass" reading={reading.types.grass} />
-	<PollenCard category="tree" reading={reading.types.tree} />
-	<PollenCard category="weed" reading={reading.types.weed} />
-</section>
-
-<ForecastStrip forecast={reading.forecast} />
+<AnswerView {reading} />
 
 <section class="search-zone" aria-label="Look up a different area">
 	<h2>Search any UK postcode or town</h2>
@@ -136,18 +122,6 @@
 {/if}
 
 <style>
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: var(--sp-3);
-	}
-
-	@media (max-width: 720px) {
-		.cards {
-			grid-template-columns: 1fr;
-		}
-	}
-
 	.note {
 		margin-top: var(--sp-5);
 		font-size: var(--fs-sm);

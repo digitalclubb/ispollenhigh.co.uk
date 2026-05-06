@@ -1,40 +1,57 @@
 <script lang="ts">
 	import type { PollenLevel } from '$lib/types/pollen';
-	import { verdict } from '$lib/utils/format';
+	import { fetchedAtTime, verdict } from '$lib/utils/format';
 
 	type Props = {
 		level: PollenLevel;
 		locationName: string;
 		validFor: string;
+		dayLabel: string;
+		isToday: boolean;
+		fetchedAt: string;
+		trend: string | null;
 	};
 
-	let { level, locationName, validFor }: Props = $props();
+	let {
+		level,
+		locationName,
+		validFor,
+		dayLabel,
+		isToday,
+		fetchedAt,
+		trend
+	}: Props = $props();
 
-	const text = $derived(verdict(level, locationName));
+	const text = $derived(verdict(level, locationName, dayLabel, isToday));
 
-	/**
-	 * Short masthead-style date stamp ("Tuesday, 6 May") rather than the full
-	 * year. The H1 already establishes that this is a forecast, so the kicker
-	 * just dates it.
-	 */
-	const date = $derived(
+	const dateStamp = $derived(
 		new Intl.DateTimeFormat('en-GB', {
 			weekday: 'long',
 			day: 'numeric',
 			month: 'long'
 		}).format(new Date(validFor))
 	);
+
+	const fetchedStamp = $derived(fetchedAtTime(fetchedAt));
 </script>
 
-<!--
-	aria-live="polite" + aria-atomic="true" so screen readers announce the
-	new verdict when geolocation override flips the H1 mid-page. Initial
-	render is not announced (that's how aria-live works) so this only kicks
-	in for the user-triggered location refresh.
--->
-<header class="hero" data-level={level} aria-live="polite" aria-atomic="true">
-	<p class="kicker">{date}</p>
-	<h1>{text}</h1>
+<header class="hero" data-level={level}>
+	<p class="kicker">
+		<span>{dateStamp}</span>
+		<span class="dot" aria-hidden="true"></span>
+		<span class="freshness">Updated {fetchedStamp}</span>
+	</p>
+	<!--
+		aria-live scoped to the H1 + trend only. The kicker date and the
+		freshness stamp don't carry the user-facing answer, so leaving them
+		out keeps screen readers from re-announcing them every day-switch.
+	-->
+	<div aria-live="polite" aria-atomic="true">
+		<h1>{text}</h1>
+		{#if trend}
+			<p class="trend">{trend}</p>
+		{/if}
+	</div>
 </header>
 
 <style>
@@ -43,12 +60,29 @@
 	}
 
 	.kicker {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--sp-3);
 		font-size: var(--fs-sm);
 		font-weight: var(--weight-medium);
 		letter-spacing: var(--tracking-loose);
 		text-transform: uppercase;
 		color: var(--ink-mute);
 		margin-bottom: var(--sp-5);
+	}
+
+	.dot {
+		display: inline-block;
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: currentColor;
+		opacity: 0.5;
+	}
+
+	.freshness {
+		font-variant-numeric: tabular-nums;
 	}
 
 	h1 {
@@ -61,11 +95,13 @@
 		max-width: 16ch;
 	}
 
-	/*
-	 * Headline colour cycles through the level palette so the reassuring
-	 * cases read calm and the alarming cases read urgent. None and very-low
-	 * stay neutral ink because there is nothing to flag.
-	 */
+	.trend {
+		margin-top: var(--sp-4);
+		font-size: var(--fs-md);
+		color: var(--ink-soft);
+		max-width: 40ch;
+	}
+
 	[data-level='low'] h1 {
 		color: var(--level-low-accent);
 	}

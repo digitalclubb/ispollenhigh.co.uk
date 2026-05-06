@@ -140,7 +140,7 @@ export async function fetchGooglePollen(args: {
 		validFor: today.date,
 		overall: today.overall,
 		types: today.types,
-		forecast: days,
+		forecast: days as [ForecastDay, ...ForecastDay[]],
 		source: 'google'
 	};
 }

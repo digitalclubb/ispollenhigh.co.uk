@@ -27,7 +27,9 @@ export interface PollenReading {
 	validFor: string;
 	overall: { level: PollenLevel; indexValue: number };
 	types: Record<PollenCategory, PollenTypeReading>;
-	forecast: ForecastDay[];
+	/** Always non-empty. Day 0 is today. Both adapters and the synthetic
+	   stub throw if they cannot produce at least one day. */
+	forecast: [ForecastDay, ...ForecastDay[]];
 	source: PollenSource;
 	stale?: boolean;
 }

@@ -93,7 +93,7 @@ export function syntheticReading(args: {
 		validFor: today0.date,
 		overall: today0.overall,
 		types: today0.types,
-		forecast,
+		forecast: forecast as [ForecastDay, ...ForecastDay[]],
 		source: 'synthetic'
 	};
 }
