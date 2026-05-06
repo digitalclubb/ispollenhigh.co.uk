@@ -13,42 +13,25 @@
 		Showing pollen for <strong>{locationName}</strong>.
 	</p>
 
-	<div class="actions">
-		<button
-			type="button"
-			class="btn primary"
-			disabled={busy}
-			aria-busy={busy}
-			aria-live="polite"
-			onclick={onUseLocation}
-		>
-			{busy ? 'Locating…' : 'Use my exact location'}
-		</button>
-
-		<form action="/q" method="get" class="search">
-			<label for="postcode-search" class="visually-hidden">Postcode or town</label>
-			<input
-				id="postcode-search"
-				name="postcode"
-				type="search"
-				placeholder="Postcode or town"
-				autocomplete="postal-code"
-				inputmode="text"
-				maxlength="20"
-				required
-			/>
-			<button type="submit" class="btn">Check</button>
-		</form>
-	</div>
+	<button
+		type="button"
+		class="btn primary"
+		disabled={busy}
+		aria-busy={busy}
+		aria-live="polite"
+		onclick={onUseLocation}
+	>
+		{busy ? 'Locating…' : 'Use my exact location'}
+	</button>
 </section>
 
 <style>
 	.geo {
-		margin-top: var(--sp-7);
-		padding-top: var(--sp-6);
-		border-top: 1px solid var(--rule);
+		margin-top: var(--sp-6);
 		display: flex;
-		flex-direction: column;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
 		gap: var(--sp-4);
 	}
 
@@ -62,13 +45,6 @@
 		font-weight: var(--weight-medium);
 	}
 
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--sp-3);
-		align-items: stretch;
-	}
-
 	.btn {
 		min-height: 2.75rem;
 		padding-inline: var(--sp-4);
@@ -79,7 +55,9 @@
 		font-weight: var(--weight-medium);
 		font-size: var(--fs-sm);
 		cursor: pointer;
-		transition: background var(--ease-quick), color var(--ease-quick);
+		transition:
+			background var(--ease-quick),
+			color var(--ease-quick);
 	}
 
 	.btn:hover,
@@ -102,28 +80,5 @@
 	.btn[disabled] {
 		opacity: 0.6;
 		cursor: progress;
-	}
-
-	.search {
-		display: flex;
-		flex-grow: 1;
-		max-width: 28rem;
-		gap: var(--sp-2);
-	}
-
-	input[type='search'] {
-		flex: 1;
-		min-width: 0;
-		padding: var(--sp-2) var(--sp-4);
-		border: 1px solid var(--rule);
-		border-radius: var(--radius-md);
-		background: var(--paper);
-		font-size: var(--fs-base);
-	}
-
-	input[type='search']:focus-visible {
-		outline: var(--focus-ring);
-		outline-offset: var(--focus-offset);
-		border-color: var(--ink);
 	}
 </style>
