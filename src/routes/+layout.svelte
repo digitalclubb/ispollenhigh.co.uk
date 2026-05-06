@@ -1,6 +1,11 @@
 <script lang="ts">
 	import '$lib/styles/global.css';
+	import { inject } from '@vercel/analytics';
 	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
+	import { onMount } from 'svelte';
+
+	// onMount only runs client-side, no browser guard needed.
+	onMount(() => inject({ mode: 'production' }));
 
 	let { children } = $props();
 </script>
@@ -22,6 +27,12 @@
 </main>
 
 <footer>
+	<nav class="legal-nav" aria-label="Site information">
+		<a href="/about">About</a>
+		<a href="/privacy">Privacy</a>
+		<a href="/cookies">Cookies</a>
+		<a href="/terms">Terms</a>
+	</nav>
 	<p class="legal">
 		<small>
 			Pollen data: Google Pollen API and CAMS via Open-Meteo. Forecasts are
@@ -42,6 +53,26 @@
 		font-size: var(--fs-sm);
 		border-top: 1px solid var(--rule);
 		margin-top: var(--sp-9);
+	}
+
+	.legal-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--sp-5);
+		margin-bottom: var(--sp-4);
+	}
+
+	.legal-nav a {
+		color: var(--ink-soft);
+		text-decoration: none;
+		font-weight: var(--weight-medium);
+	}
+
+	.legal-nav a:hover,
+	.legal-nav a:focus-visible {
+		color: var(--ink);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
 	}
 
 	.legal {
