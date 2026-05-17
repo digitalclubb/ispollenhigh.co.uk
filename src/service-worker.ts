@@ -75,7 +75,20 @@ self.addEventListener('fetch', (event) => {
 	}
 });
 
+/**
+ * Defense-in-depth guard for the cache helpers: never forward a request to the
+ * network unless it targets our own origin. The fetch handler already filters
+ * cross-origin and non-GET requests, but enforcing the invariant at the point
+ * of the network call keeps these helpers safe in isolation (CWE-918).
+ */
+function assertSameOrigin(request: Request): void {
+	if (new URL(request.url).origin !== self.location.origin) {
+		throw new TypeError(`Refusing to fetch cross-origin request: ${request.url}`);
+	}
+}
+
 async function cacheFirst(request: Request, cacheName: string): Promise<Response> {
+	assertSameOrigin(request);
 	const cache = await caches.open(cacheName);
 	const hit = await cache.match(request);
 	if (hit) return hit;
@@ -89,6 +102,7 @@ async function networkFirst(
 	cacheName: string,
 	htmlFallback: boolean
 ): Promise<Response> {
+	assertSameOrigin(request);
 	const cache = await caches.open(cacheName);
 	try {
 		const res = await fetch(request);
