@@ -26,6 +26,12 @@
 </main>
 
 <footer>
+	<nav class="legal-nav" aria-label="Pollen guides">
+		<a href="/locations">All areas</a>
+		<a href="/pollen-calendar">Pollen calendar</a>
+		<a href="/hay-fever-season">Hay fever season</a>
+		<a href="/pollen-levels-explained">Pollen levels</a>
+	</nav>
 	<nav class="legal-nav" aria-label="Site information">
 		<a href="/about">About</a>
 		<a href="/privacy">Privacy</a>

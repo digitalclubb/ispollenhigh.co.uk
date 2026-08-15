@@ -1,18 +1,26 @@
 <script lang="ts">
-	import type { Location } from '$lib/data/locations';
-	import { locationCopy } from '$lib/data/local-copy';
+	import type { RenderedCopy } from '$lib/data/local-copy';
 
-	type Props = { location: Location };
-	let { location }: Props = $props();
-
-	const copy = $derived(locationCopy(location));
+	// The copy is templated from the parent region, so it is built in the
+	// page's server load. Rendering it here would drag `local-copy` — and
+	// through it the whole registry — into the browser bundle.
+	type Props = { copy: RenderedCopy };
+	let { copy }: Props = $props();
 </script>
 
 <section class="copy" aria-label="About pollen in this area">
 	<p>{copy.intro}</p>
 	<p>{copy.species}</p>
 	<p>{copy.timing}</p>
-	<p class="cross">{copy.cross}</p>
+	{#if copy.crossRegion}
+		<p class="cross">
+			For the wider regional view see
+			<a href={copy.crossRegion.path}>{copy.crossRegion.name}</a>, or
+			<a href="/locations">browse every area we cover</a>.
+		</p>
+	{:else}
+		<p class="cross">{copy.cross}</p>
+	{/if}
 </section>
 
 <style>
@@ -36,5 +44,16 @@
 	.cross {
 		color: var(--ink-mute);
 		font-size: var(--fs-sm);
+	}
+
+	.cross a {
+		color: var(--ink-soft);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.cross a:hover,
+	.cross a:focus-visible {
+		color: var(--ink);
 	}
 </style>

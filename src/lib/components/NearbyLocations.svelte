@@ -1,24 +1,21 @@
 <script lang="ts">
-	import { type Location, getCanonicalPath } from '$lib/data/locations';
-	import { nearbyLocations } from '$lib/utils/geo';
+	import type { DirectoryLink } from '$lib/data/directory';
 
-	type Props = {
-		origin: Location;
-		count?: number;
-	};
+	// Presentational only. The distance ranking runs in the page's server
+	// load: doing it here would pull the whole location registry (~176 kB)
+	// into the browser bundle to render six links.
+	type Props = { items: DirectoryLink[] };
 
-	let { origin, count = 6 }: Props = $props();
-
-	const items = $derived(nearbyLocations(origin, count));
+	let { items }: Props = $props();
 </script>
 
 {#if items.length > 0}
 	<nav class="nearby" aria-label="Nearby areas">
 		<h2>Nearby areas</h2>
 		<ul>
-			{#each items as loc (loc.slug + loc.type)}
+			{#each items as loc (loc.path)}
 				<li>
-					<a href={getCanonicalPath(loc)}>{loc.name}</a>
+					<a href={loc.path}>{loc.name}</a>
 				</li>
 			{/each}
 		</ul>

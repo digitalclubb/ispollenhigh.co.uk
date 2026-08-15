@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { type LocationType, getCanonicalPath } from '$lib/data/locations';
-	import { resolveLocation, suggestLocations } from '$lib/utils/resolve';
+	import type { LocationType } from '$lib/data/locations';
+	import { getCanonicalPath } from '$lib/data/paths';
+	import type * as Resolve from '$lib/utils/resolve';
 
 	type Props = {
 		placeholder?: string;
@@ -13,11 +14,45 @@
 	const statusId = 'search-status';
 
 	let comboboxEl: HTMLDivElement | undefined = $state();
+	let inputEl: HTMLInputElement | undefined = $state();
 	let query = $state('');
 	let highlighted = $state(-1);
 	let open = $state(false);
 
-	const matches = $derived(query.trim().length > 0 ? suggestLocations(query, 6) : []);
+	/**
+	 * The search index covers ~1,240 places (14 kB gzipped), so it is fetched
+	 * on first interaction rather than on every page load. Until it arrives
+	 * the input still works: the form posts to /q, which resolves server-side.
+	 */
+	let resolver = $state<typeof Resolve | null>(null);
+	let loading = false;
+
+	async function loadResolver(): Promise<void> {
+		if (resolver || loading) return;
+		loading = true;
+		try {
+			resolver = await import('$lib/utils/resolve');
+		} finally {
+			loading = false;
+		}
+	}
+
+	const matches = $derived(
+		resolver && query.trim().length > 0 ? resolver.suggestLocations(query, 6) : []
+	);
+
+	/**
+	 * Open the listbox when the index finishes loading. Without this, someone
+	 * who types their whole query (or pastes it) before the chunk arrives gets
+	 * no suggestions at all until they press another key: `onInput` ran while
+	 * `matches` was still empty and left `open` false.
+	 */
+	$effect(() => {
+		if (resolver && matches.length > 0 && highlighted < 0 && document.activeElement === inputEl) {
+			open = true;
+			highlighted = 0;
+		}
+	});
 
 	const status = $derived.by(() => {
 		const trimmed = query.trim();
@@ -30,16 +65,21 @@
 
 	function typeLabel(t: LocationType): string {
 		if (t === 'city') return 'City';
+		if (t === 'town') return 'Town';
 		if (t === 'postcode-area') return 'Postcode area';
 		return 'Region';
 	}
 
 	function onInput() {
+		loadResolver();
 		open = matches.length > 0;
 		highlighted = matches.length > 0 ? 0 : -1;
 	}
 
 	function onFocus() {
+		// Warm the index the moment the box is focused, so the first
+		// keystroke usually has suggestions ready.
+		loadResolver();
 		if (matches.length > 0) open = true;
 	}
 
@@ -85,12 +125,13 @@
 				pick(highlighted);
 				return;
 			}
-			const hit = resolveLocation(query);
+			const hit = resolver?.resolveLocation(query);
 			if (hit) {
 				e.preventDefault();
 				goto(getCanonicalPath(hit));
 			}
-			// Otherwise: let the form submit to /q for unresolved input.
+			// Otherwise (including "index not loaded yet"): let the form
+			// submit to /q, which resolves server-side and 308s.
 		} else if (e.key === 'Escape') {
 			if (!open) return;
 			e.preventDefault();
@@ -104,6 +145,7 @@
 	<label for="search-input" class="visually-hidden">Postcode, town or region</label>
 	<div class="combobox" bind:this={comboboxEl}>
 		<input
+			bind:this={inputEl}
 			bind:value={query}
 			id="search-input"
 			name="postcode"

@@ -1,16 +1,22 @@
 /**
- * Full v1 location registry: 16 Met Office regions, 120 UK postcode areas
- * and 50 cities by population (ONS mid-2024 estimates). Each entry has a
- * centroid lat/lon used for both the live pollen call and the canonical URL.
+ * Full location registry: 16 Met Office regions, 121 UK postcode areas,
+ * 50 cities by population (ONS mid-2024 estimates) and every UK town of
+ * 10,000 people or more (generated into `towns.ts` from GeoNames). Each
+ * entry has a centroid lat/lon used for both the live pollen call and the
+ * canonical URL.
  *
  * Coordinates are the main settlement of each area, rounded to 4 decimals.
  *
  * Local-copy metadata (peakMonths, dominant species) is computed from the
  * parent region in `local-copy.ts` rather than hand-tuned per location, so
- * the copy stays authentic without 191 hand-written paragraphs.
+ * the copy stays authentic without a thousand hand-written paragraphs.
  */
 
-export type LocationType = 'postcode-area' | 'city' | 'region';
+import { TOWNS } from './towns';
+
+export { TOWNS };
+
+export type LocationType = 'postcode-area' | 'city' | 'region' | 'town';
 
 export interface Location {
 	slug: string;
@@ -20,6 +26,11 @@ export interface Location {
 	lon: number;
 	parentRegion?: string;
 	aliases?: string[];
+	/** County or unitary authority. Towns only; used in copy and for
+	 * disambiguating two towns that share a name. */
+	county?: string;
+	/** Settlement population, towns only. Orders the region listings. */
+	population?: number;
 }
 
 /**
@@ -1466,11 +1477,21 @@ export const POSTCODE_AREAS: Location[] = [
 	}
 ];
 
-export const ALL_LOCATIONS: Location[] = [...REGIONS, ...CITIES, ...POSTCODE_AREAS];
+export const ALL_LOCATIONS: Location[] = [...REGIONS, ...CITIES, ...TOWNS, ...POSTCODE_AREAS];
 
 export function findBySlug(type: LocationType, slug: string): Location | undefined {
 	const slugLower = slug.toLowerCase();
 	return ALL_LOCATIONS.find((l) => l.type === type && l.slug === slugLower);
+}
+
+/**
+ * Single-segment lookup for the /[slug] route. Cities win over towns (London
+ * the city, not any London-named hamlet) and towns over postcode areas, which
+ * matters for two-letter names — no town is called "SW", but the ordering
+ * keeps the rule explicit.
+ */
+export function findPlace(slug: string): Location | undefined {
+	return findBySlug('city', slug) ?? findBySlug('town', slug) ?? findBySlug('postcode-area', slug);
 }
 
 export function findRegion(slug: string | undefined): Location | undefined {
@@ -1478,17 +1499,6 @@ export function findRegion(slug: string | undefined): Location | undefined {
 	return REGIONS.find((r) => r.slug === slug);
 }
 
-export function getCanonicalPath(loc: Location): string {
-	// Greater London the region and London the city share an audience and a
-	// centroid. We canonicalise the region to the city URL so Google only
-	// indexes one of them.
-	if (loc.type === 'region' && loc.slug === 'london') return '/london';
-	if (loc.type === 'region') return `/region/${loc.slug}`;
-	return `/${loc.slug}`;
-}
-
-export function getServedPath(loc: Location): string {
-	// Where the route actually lives, ignoring canonicalisation.
-	if (loc.type === 'region') return `/region/${loc.slug}`;
-	return `/${loc.slug}`;
-}
+// Path helpers live in ./paths so client-side code can build a URL without
+// importing the registry itself. Re-exported here for existing callers.
+export { getCanonicalPath, getServedPath } from './paths';

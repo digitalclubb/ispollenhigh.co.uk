@@ -7,7 +7,6 @@
 	import SkeletonAnswer from '$lib/components/SkeletonAnswer.svelte';
 	import { markAnswerRendered } from '$lib/state/install-prompt.svelte';
 	import type { PollenReading } from '$lib/types/pollen';
-	import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 	import type { PageData } from './$types';
 
 	const GEO_DISMISSED_KEY = 'iph_geo_dismissed';
@@ -203,10 +202,16 @@
 </script>
 
 <svelte:head>
-	<title>Is pollen high in {reading.location.name}? | ispollenhigh</title>
+	<!--
+		Deliberately NOT personalised. The title used to interpolate the
+		IP-guessed location, so the version Google crawled read "Is pollen high
+		in Hackney?" — the site's most important page competing on a borough
+		nobody searches. Users still get their own area in the H1 below.
+	-->
+	<title>Pollen count today — is pollen high in your area? | ispollenhigh</title>
 	<meta
 		name="description"
-		content="A straight answer to whether pollen is high in your area today, with a five-day outlook for grass, tree and weed pollen."
+		content="Today's UK pollen count, by town and postcode. A straight answer on whether pollen is high right now, with grass, tree and weed levels and a five-day outlook."
 	/>
 	<link rel="canonical" href="https://ispollenhigh.co.uk/" />
 	<meta property="og:title" content="Is pollen high today?" />
@@ -221,7 +226,7 @@
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
-	{@html `<script type="application/ld+json">${jsonLdScript(homepageJsonLd())}</script>`}
+	{@html `<script type="application/ld+json">${data.jsonLd}</script>`}
 </svelte:head>
 
 <!--
@@ -264,6 +269,29 @@
 		Showing {reading.source === 'open-meteo' ? 'CAMS' : 'demo'} data.
 	</p>
 {/if}
+
+<!--
+	Crawlable browse block. The homepage used to link to nothing but the legal
+	pages, so Googlebot had no route into any location page and stopped at the
+	front door. Links come from the server loader as name/path pairs.
+-->
+<nav class="browse" aria-label="Browse pollen forecasts by area">
+	<h2>Pollen count by city</h2>
+	<ul class="links">
+		{#each data.browse.cities as city (city.path)}
+			<li><a href={city.path}>{city.name}</a></li>
+		{/each}
+	</ul>
+
+	<h2>Pollen count by region</h2>
+	<ul class="links muted">
+		{#each data.browse.regions as region (region.path)}
+			<li><a href={region.path}>{region.name}</a></li>
+		{/each}
+	</ul>
+
+	<p class="all"><a href="/locations">See every town, city and postcode area →</a></p>
+</nav>
 
 <style>
 	/*
@@ -313,5 +341,69 @@
 
 	.search-zone .note {
 		margin-bottom: var(--sp-4);
+	}
+
+	.browse {
+		margin-top: var(--sp-7);
+		padding-top: var(--sp-6);
+		border-top: 1px solid var(--rule);
+	}
+
+	.browse h2 {
+		font-size: var(--fs-md);
+		font-weight: var(--weight-medium);
+		color: var(--ink-mute);
+		margin-bottom: var(--sp-4);
+	}
+
+	.browse h2:not(:first-child) {
+		margin-top: var(--sp-6);
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--sp-2) var(--sp-3);
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.links a {
+		display: inline-block;
+		padding: var(--sp-2) var(--sp-3);
+		border: 1px solid var(--rule);
+		border-radius: var(--radius-md);
+		background: var(--paper-warm);
+		color: var(--ink);
+		font-size: var(--fs-sm);
+		font-weight: var(--weight-medium);
+		text-decoration: none;
+	}
+
+	.links.muted a {
+		color: var(--ink-soft);
+		font-weight: var(--weight-regular);
+	}
+
+	.links a:hover,
+	.links a:focus-visible {
+		border-color: var(--ink-mute);
+	}
+
+	.all {
+		margin-top: var(--sp-5);
+		font-size: var(--fs-sm);
+	}
+
+	.all a {
+		color: var(--ink-soft);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.all a:hover,
+	.all a:focus-visible {
+		color: var(--ink);
 	}
 </style>

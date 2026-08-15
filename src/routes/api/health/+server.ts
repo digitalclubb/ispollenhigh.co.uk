@@ -26,7 +26,14 @@ import type { RequestHandler } from './$types';
 
 export const config = { regions: ['lhr1'] };
 
-const PROBE = { lat: 51.5, lon: -0.1, locationName: 'London', countMetrics: false };
+const PROBE = {
+	lat: 51.5,
+	lon: -0.1,
+	locationName: 'London',
+	countMetrics: false,
+	// Always go upstream: a memo hit would mask an outage for up to 30 min.
+	skipMemo: true
+};
 const CACHE = 'public, s-maxage=60, stale-while-revalidate=120';
 
 export const GET: RequestHandler = async ({ url }) => {

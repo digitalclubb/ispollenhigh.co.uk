@@ -1,4 +1,7 @@
+import { toLinks, topCities } from '$lib/data/directory';
+import { REGIONS } from '$lib/data/locations';
 import { getPollen } from '$lib/server/pollen-service';
+import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
 import { locationFromHeaders } from '$lib/utils/location';
 import type { PageServerLoad } from './$types';
 
@@ -22,5 +25,14 @@ export const load: PageServerLoad = async ({ request, setHeaders }) => {
 		'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=1800'
 	});
 
-	return { reading };
+	// Crawlable browse links, flattened to name + path so the location
+	// registry stays out of the browser bundle.
+	return {
+		reading,
+		jsonLd: jsonLdScript(homepageJsonLd()),
+		browse: {
+			cities: toLinks(topCities(24)),
+			regions: toLinks(REGIONS)
+		}
+	};
 };

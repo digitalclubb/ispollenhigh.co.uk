@@ -1,12 +1,14 @@
 import { error } from '@sveltejs/kit';
-import { findBySlug } from '$lib/data/locations';
+import { childrenOf, toLinks } from '$lib/data/directory';
+import { findBySlug, findPlace } from '$lib/data/locations';
+import { locationPageData } from '$lib/server/location-page';
 import { getPollen } from '$lib/server/pollen-service';
 import type { PageServerLoad } from './$types';
 
 /**
- * Generic location page covering postcode areas (`/sw`) and cities
- * (`/london`). Phase 3 turns each of these into a fully-fleshed page with
- * local copy and JSON-LD; for phase 2 they share the homepage UI.
+ * Generic location page covering cities (`/london`), towns (`/skegness`) and
+ * postcode areas (`/sw`). Regions live under /region/[slug] because their
+ * names collide with too much else.
  */
 
 /**
@@ -25,9 +27,7 @@ export const config = {
 export const prerender = false;
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
-	const cityHit = findBySlug('city', params.slug);
-	const areaHit = findBySlug('postcode-area', params.slug);
-	const location = cityHit ?? areaHit;
+	const location = findPlace(params.slug);
 	if (!location) error(404, 'Unknown location');
 
 	const reading = await getPollen({
@@ -42,5 +42,27 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
 	});
 
-	return { reading, location };
+	/**
+	 * A region whose canonical URL is this page hands over its child list.
+	 * Greater London is the only such region: it canonicalises to /london, so
+	 * /region/london is excluded from the sitemap and carries a canonical tag
+	 * pointing here. Without this, the 132 London towns would be listed only
+	 * on a page Google is told not to index — the same orphaning this whole
+	 * change set exists to fix, on the largest region in the country.
+	 */
+	const hostedRegion = location.type === 'city' ? findBySlug('region', location.slug) : undefined;
+	const kids = hostedRegion ? childrenOf(hostedRegion.slug) : undefined;
+
+	return {
+		reading,
+		...locationPageData(location, reading),
+		children: kids
+			? {
+					regionName: hostedRegion?.name ?? location.name,
+					cities: toLinks(kids.cities.filter((c) => c.slug !== location.slug)),
+					towns: toLinks(kids.towns),
+					postcodeAreas: toLinks(kids.postcodeAreas)
+				}
+			: null
+	};
 };

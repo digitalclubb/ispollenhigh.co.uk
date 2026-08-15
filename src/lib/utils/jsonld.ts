@@ -1,5 +1,6 @@
 import type { Location } from '$lib/data/locations';
 import { findRegion, getCanonicalPath } from '$lib/data/locations';
+import type { SeasonSummary } from '$lib/data/season';
 import type { PollenReading } from '$lib/types/pollen';
 import { levelLabel } from './format';
 
@@ -51,7 +52,11 @@ export function homepageJsonLd(): JsonLd {
 	};
 }
 
-export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
+export function locationJsonLd(
+	loc: Location,
+	reading: PollenReading,
+	season?: SeasonSummary
+): JsonLd {
 	const url = `${SITE}${getCanonicalPath(loc)}`;
 	const region = findRegion(loc.parentRegion);
 	const breadcrumb = breadcrumbList(loc, region);
@@ -77,6 +82,7 @@ export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
 				about: { '@id': `${url}#place` },
 				mainEntity: { '@id': `${url}#place` }
 			},
+			...(season ? [locationFaq(loc, reading, season)] : []),
 			{
 				'@type': 'Place',
 				'@id': `${url}#place`,
@@ -90,6 +96,38 @@ export function locationJsonLd(loc: Location, reading: PollenReading): JsonLd {
 				...(region ? { containedInPlace: { '@type': 'Place', name: region.name } } : {})
 			},
 			breadcrumb
+		]
+	};
+}
+
+/**
+ * Location-specific Q&A. Google rarely renders FAQ rich results for
+ * non-government sites any more, so this is here for entity understanding
+ * rather than for the snippet — the same answers appear as visible copy on
+ * the page, which is what actually earns the click.
+ */
+function locationFaq(loc: Location, reading: PollenReading, season: SeasonSummary) {
+	const overall = levelLabel(reading.overall.level).toLowerCase();
+	const worst = season.worstMonths.join(', ');
+	return {
+		'@type': 'FAQPage',
+		mainEntity: [
+			{
+				'@type': 'Question',
+				name: `When is hay fever season in ${loc.name}?`,
+				acceptedAnswer: {
+					'@type': 'Answer',
+					text: `The pollen season in ${loc.name} runs from ${season.overall}, and the worst months are usually ${worst}. ${season.lines.map((l) => l.text).join(' ')}`
+				}
+			},
+			{
+				'@type': 'Question',
+				name: `Is pollen high in ${loc.name} today?`,
+				acceptedAnswer: {
+					'@type': 'Answer',
+					text: `Pollen in ${loc.name} is ${overall} today (${reading.validFor}): grass ${levelLabel(reading.types.grass.level).toLowerCase()}, tree ${levelLabel(reading.types.tree.level).toLowerCase()}, weed ${levelLabel(reading.types.weed.level).toLowerCase()}.`
+				}
+			}
 		]
 	};
 }

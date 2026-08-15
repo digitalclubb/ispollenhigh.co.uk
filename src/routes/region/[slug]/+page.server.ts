@@ -1,5 +1,7 @@
 import { error } from '@sveltejs/kit';
+import { childrenOf, toLinks } from '$lib/data/directory';
 import { findBySlug } from '$lib/data/locations';
+import { locationPageData } from '$lib/server/location-page';
 import { getPollen } from '$lib/server/pollen-service';
 import type { PageServerLoad } from './$types';
 
@@ -25,5 +27,18 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
 	});
 
-	return { reading, location: region };
+	// Region pages are the hub every town in that region hangs off, so the
+	// child list is the whole point of the page for a crawler. Flattened to
+	// name/path pairs to keep the registry server-side.
+	const children = childrenOf(region.slug);
+
+	return {
+		reading,
+		...locationPageData(region, reading),
+		children: {
+			cities: toLinks(children.cities),
+			towns: toLinks(children.towns),
+			postcodeAreas: toLinks(children.postcodeAreas)
+		}
+	};
 };

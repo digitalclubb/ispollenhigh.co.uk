@@ -1,4 +1,5 @@
 import { type Location, REGIONS } from './locations';
+import { getCanonicalPath } from './paths';
 
 /**
  * Per-location copy. Rather than hand-writing 191 paragraphs, we template by
@@ -174,6 +175,44 @@ export interface LocationCopyVars {
 	species: string;
 	timing: string;
 	cross: string;
+	/**
+	 * The parent region, when there is one. The template renders it as a real
+	 * anchor: this sentence used to name the region in plain text, which gave
+	 * a crawler no way up from a town page to its region hub.
+	 */
+	crossRegion?: Location;
+}
+
+/** What the component actually renders: strings and one link. */
+export interface RenderedCopy {
+	intro: string;
+	species: string;
+	timing: string;
+	cross: string;
+	crossRegion?: { name: string; path: string };
+}
+
+/** Flatten copy for the browser, resolving the region link to a path. */
+export function renderedCopy(loc: Location): RenderedCopy {
+	const copy = locationCopy(loc);
+
+	// Greater London canonicalises onto /london, so London the city would
+	// otherwise render "see Greater London" as a link to the page you are
+	// already on. Drop the sentence rather than emit a self-link.
+	const ownPath = getCanonicalPath(loc);
+	const regionPath = copy.crossRegion ? getCanonicalPath(copy.crossRegion) : undefined;
+	const showRegion = copy.crossRegion && regionPath !== ownPath;
+
+	return {
+		intro: copy.intro,
+		species: copy.species,
+		timing: copy.timing,
+		cross: copy.cross,
+		crossRegion:
+			showRegion && copy.crossRegion && regionPath
+				? { name: copy.crossRegion.name, path: regionPath }
+				: undefined
+	};
 }
 
 /**
@@ -188,8 +227,10 @@ export function locationCopy(loc: Location): LocationCopyVars {
 	const species = `Tree pollen here is dominated by ${listAnd(r.dominantTrees)}, with grass led by ${listAnd(r.dominantGrasses)} and weeds by ${listAnd(r.dominantWeeds)}.`;
 	const timing = `Tree pollen typically peaks in ${r.peakTree}. Grass counts are highest from ${r.peakGrass}. ${capitalise(r.flavour)}.`;
 	const cross = crossLink(loc);
+	const crossRegion =
+		loc.type === 'region' ? undefined : REGIONS.find((reg) => reg.slug === loc.parentRegion);
 
-	return { intro, species, timing, cross };
+	return { intro, species, timing, cross, crossRegion };
 }
 
 function introFor(loc: Location): string {
@@ -199,16 +240,35 @@ function introFor(loc: Location): string {
 	if (loc.type === 'postcode-area') {
 		return `${loc.name.split(' ')[0]} covers part of ${parentName(loc) ?? 'the UK'} and follows its regional pollen pattern closely.`;
 	}
+	if (loc.type === 'town') {
+		// County and population come from the gazetteer, so each town page
+		// opens on facts of its own rather than one sentence shared by a
+		// thousand pages with the name swapped.
+		const region = parentName(loc);
+		const where = loc.county ? `${loc.name} sits in ${loc.county}` : `${loc.name} is a UK town`;
+		const pattern = region ? `, and takes its pollen pattern from the ${region} forecast region` : '';
+		const people = loc.population
+			? ` Around ${formatPopulation(loc.population)} people live here, and hayfever sufferers should track all three pollen types from March through August.`
+			: ' Hayfever sufferers here should track all three pollen types from March through August.';
+		return `${where}${pattern}.${people}`;
+	}
 	return `${loc.name} sees the typical UK pollen calendar, with a tree-led spring peak and a grass-led early summer.`;
 }
 
+/** Population to the nearest hundred — the gazetteer is not precise enough to imply otherwise. */
+function formatPopulation(n: number): string {
+	return (Math.round(n / 100) * 100).toLocaleString('en-GB');
+}
+
+/**
+ * Fallback sentence for locations with no parent region to link to. Places
+ * that do have one get a linked sentence from the template instead.
+ */
 function crossLink(loc: Location): string {
 	if (loc.type === 'region') {
-		return `If you're in a specific town or postcode area, search above for a more local view.`;
+		return `If you're in a specific town or postcode area, pick one from the list below for a more local view.`;
 	}
-	const region = REGIONS.find((r) => r.slug === loc.parentRegion);
-	if (!region) return `Search above to compare neighbouring postcode areas and towns.`;
-	return `For the wider regional view see ${region.name}.`;
+	return `Search above to compare neighbouring postcode areas and towns.`;
 }
 
 function parentName(loc: Location): string | undefined {

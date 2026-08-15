@@ -1,59 +1,34 @@
-import { ALL_LOCATIONS, getCanonicalPath } from '$lib/data/locations';
+import { SITE, SITEMAP_HEADERS, STATIC_LASTMOD } from '$lib/data/sitemap';
 import type { RequestHandler } from './$types';
 
 /**
- * Sitemap of every indexable URL: homepage, all 16 regions, all 121 postcode
- * areas, all 50 cities, plus the four legal pages added in phase 5.
+ * Sitemap index. Google fetched the old single flat sitemap exactly once
+ * (26 May) and never came back, so almost none of the URLs in it were ever
+ * crawled. An index lets Google track the two halves independently: the
+ * places half genuinely changes every day (the reading on the page changes),
+ * while the static half almost never does — and mixing them meant every URL,
+ * legal pages included, claimed a fresh <lastmod> every single day, which is
+ * a signal a crawler learns to discount.
  *
- * <lastmod> is "today" because the page content references today's pollen
- * level and changes every crawl. That keeps Google's freshness signal honest.
+ * The path stays /sitemap.xml so the already-submitted property keeps working.
  */
 
 export const config = { regions: ['lhr1'] };
 
-const SITE = 'https://ispollenhigh.co.uk';
-const LEGAL_PAGES = ['/about', '/privacy', '/terms', '/cookies'];
-
-function xmlEscape(s: string): string {
-	return s
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&apos;');
-}
-
 export const GET: RequestHandler = () => {
 	const today = new Date().toISOString().slice(0, 10);
-	const urls: { loc: string; priority: string }[] = [{ loc: SITE, priority: '1.0' }];
-
-	const seen = new Set<string>();
-	for (const loc of ALL_LOCATIONS) {
-		const path = getCanonicalPath(loc);
-		if (seen.has(path)) continue;
-		seen.add(path);
-		const priority = loc.type === 'city' ? '0.9' : loc.type === 'postcode-area' ? '0.7' : '0.6';
-		urls.push({ loc: `${SITE}${path}`, priority });
-	}
-
-	for (const path of LEGAL_PAGES) {
-		urls.push({ loc: `${SITE}${path}`, priority: '0.3' });
-	}
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls
-	.map(
-		({ loc, priority }) =>
-			`	<url>\n\t\t<loc>${xmlEscape(loc)}</loc>\n\t\t<lastmod>${today}</lastmod>\n\t\t<priority>${priority}</priority>\n\t</url>`
-	)
-	.join('\n')}
-</urlset>`;
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<sitemap>
+		<loc>${SITE}/sitemap-places.xml</loc>
+		<lastmod>${today}</lastmod>
+	</sitemap>
+	<sitemap>
+		<loc>${SITE}/sitemap-pages.xml</loc>
+		<lastmod>${STATIC_LASTMOD}</lastmod>
+	</sitemap>
+</sitemapindex>`;
 
-	return new Response(xml, {
-		headers: {
-			'Content-Type': 'application/xml; charset=utf-8',
-			'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-		}
-	});
+	return new Response(xml, { headers: SITEMAP_HEADERS });
 };

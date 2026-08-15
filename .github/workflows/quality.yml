@@ -30,13 +30,18 @@ jobs:
 
       # We test the production domain directly rather than the Vercel
       # deployment-specific URL. The deployment URL is gated behind Vercel
-      # auth (401), the production domain is public. Polling /api/health
-      # in skip mode gives us a cheap readiness signal without burning
-      # Google Pollen quota.
-      - name: Wait for production to be reachable
+      # auth (401), the production domain is public.
+      #
+      # The gate polls /locations, not /api/health: health answers 200 from
+      # the *previous* deployment too, so Lighthouse could start auditing
+      # before the new build is promoted and score 404 pages for the URLs
+      # added in that build. A page that only exists in the new build is the
+      # only honest readiness signal, and it costs no Google Pollen quota
+      # because it is prerendered.
+      - name: Wait for the new deployment to be live
         run: |
           for i in $(seq 1 36); do
-            if curl -sf -o /dev/null --max-time 5 "https://ispollenhigh.co.uk/api/health?upstream=skip"; then
+            if curl -sf -o /dev/null --max-time 5 "https://ispollenhigh.co.uk/locations"; then
               echo "Production reachable on attempt $i"
               exit 0
             fi
@@ -52,8 +57,11 @@ jobs:
           urls: |
             https://ispollenhigh.co.uk/
             https://ispollenhigh.co.uk/london
+            https://ispollenhigh.co.uk/skegness
             https://ispollenhigh.co.uk/sw
             https://ispollenhigh.co.uk/region/south-east
+            https://ispollenhigh.co.uk/locations
+            https://ispollenhigh.co.uk/pollen-calendar
           configPath: ./.lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true

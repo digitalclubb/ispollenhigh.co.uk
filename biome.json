@@ -41,6 +41,18 @@
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["src/lib/data/towns.ts", "src/lib/data/search-index.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noApproximativeNumericConstant": "off"
+					}
+				}
+			}
+		}
+	],
 	"assist": {
 		"enabled": true,
 		"actions": {
