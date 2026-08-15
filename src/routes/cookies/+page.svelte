@@ -12,9 +12,9 @@
 
 	<p>
 		ispollenhigh does not set cookies. We use Vercel Web Analytics and Vercel
-		Speed Insights, both in cookieless mode, and we do not run any other
-		tracking. That is the whole story but the rest of this page exists so
-		you can verify it.
+		Speed Insights, both in cookieless mode. We do not run any other tracking.
+		That is the whole story but the rest of this page exists so you can verify
+		it.
 	</p>
 
 	<h2>What we store on your device</h2>

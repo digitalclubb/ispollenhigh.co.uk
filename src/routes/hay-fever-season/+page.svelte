@@ -10,13 +10,13 @@
 	<title>When does hay fever season start and end in the UK? | ispollenhigh</title>
 	<meta
 		name="description"
-		content="Hay fever season in the UK runs from late February to September. When each pollen starts, when it peaks, why it is later in the north, and what to expect month by month."
+		content="Hay fever season in the UK runs from late February to September. When each pollen starts, when it peaks, why it is later in the north and what to expect month by month."
 	/>
 	<link rel="canonical" href={canonical} />
 	<meta property="og:title" content="When does hay fever season start and end in the UK?" />
 	<meta
 		property="og:description"
-		content="Tree, grass and weed pollen dates for the UK, and how they shift from Cornwall to the Highlands."
+		content="Tree, grass and weed pollen dates for the UK and how they shift from Cornwall to the Highlands."
 	/>
 	<meta property="og:url" content={canonical} />
 	<meta property="og:type" content="article" />
@@ -28,8 +28,8 @@
 
 	<p class="lede">
 		In the UK the pollen season runs from late February to September. But
-		"hay fever season" is really three overlapping seasons, and which one
-		affects you decides when your bad months are.
+		"hay fever season" is really three overlapping seasons. Which one affects
+		you decides when your bad months are.
 	</p>
 
 	<h2>The short answer</h2>
@@ -62,7 +62,7 @@
 	<h2>It starts later in the north</h2>
 	<p>
 		Everything above is a fortnight or so later in Scotland than on the south
-		coast, and the season is shorter. A grass season that opens in mid-May in
+		coast and the season is shorter. A grass season that opens in mid-May in
 		Kent may not really get going until early June around Glasgow or Inverness,
 		and it winds down sooner.
 	</p>
@@ -70,10 +70,10 @@
 	<h2>When is it worst?</h2>
 	<p>
 		Mid-June to mid-July, for most people, in most of the UK. That is when
-		grass pollen peaks, and it often overlaps with the start of the weed
-		season. Within those weeks, warm dry breezy days are the bad ones and wet
-		days are a reprieve — the count can swing from low to very high and back
-		inside a week.
+		grass pollen peaks and it often overlaps with the start of the weed season.
+		Within those weeks, warm dry breezy days are the bad ones and wet days are
+		a reprieve. The count can swing from low to very high and back inside a
+		week.
 	</p>
 
 	<h2>Does hay fever season ever fully stop?</h2>

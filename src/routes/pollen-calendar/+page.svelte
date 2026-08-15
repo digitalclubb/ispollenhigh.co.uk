@@ -17,13 +17,13 @@
 </script>
 
 <svelte:head>
-	<title>UK pollen calendar — when each pollen peaks, month by month | ispollenhigh</title>
+	<title>UK pollen calendar: when each pollen peaks, month by month | ispollenhigh</title>
 	<meta
 		name="description"
 		content="A month-by-month UK pollen calendar for tree, grass and weed pollen, with how the season shifts between southern England, the Midlands, the north and Scotland."
 	/>
 	<link rel="canonical" href={canonical} />
-	<meta property="og:title" content="UK pollen calendar — when each pollen peaks" />
+	<meta property="og:title" content="UK pollen calendar: when each pollen peaks" />
 	<meta
 		property="og:description"
 		content="Month-by-month tree, grass and weed pollen for every part of the UK."
@@ -37,29 +37,28 @@
 	<h1>UK pollen calendar</h1>
 
 	<p class="lede">
-		Three different pollens cause British hay fever, and they arrive in
-		sequence rather than all at once. Knowing which one is in season explains
-		why you can sneeze through April and be fine in July, or the other way
-		round.
+		Three different pollens cause British hay fever. They arrive in sequence
+		rather than all at once, so knowing which one is in season explains why
+		you can sneeze through April and be fine in July, or the other way round.
 	</p>
 
 	<h2>The three pollen seasons</h2>
 	<p>
 		<strong>Tree pollen</strong> comes first. Alder and hazel can start in late
-		February, ash and plane follow, and birch — the strongest tree trigger in
-		Britain — peaks through April. Tree season is largely over by the end of
-		May.
+		February, ash and plane follow, then birch peaks through April. Birch is
+		the strongest tree trigger in Britain. Tree season is largely over by the
+		end of May.
 	</p>
 	<p>
 		<strong>Grass pollen</strong> is the big one. Around 95% of UK hay fever
-		sufferers react to grass, and it runs from mid-May to late July with a
-		peak in June and early July. There are usually two waves: the main one in
-		June, and a lighter second flowering in July.
+		sufferers react to grass. It runs from mid-May to late July with a peak in
+		June and early July, usually in two waves: the main one in June and a
+		lighter second flowering in July.
 	</p>
 	<p>
 		<strong>Weed pollen</strong> is last and longest. Nettle, dock, mugwort and
-		plantain run from June into September, and in a mild autumn can persist
-		into October.
+		plantain run from June into September and in a mild autumn can persist into
+		October.
 	</p>
 
 	<h2>How the season shifts north</h2>
@@ -126,7 +125,7 @@
 	<h2>Check your own area</h2>
 	<p>
 		The calendar above is the pattern. For today's actual numbers, pick your
-		forecast region — each one lists every town inside it — or
+		forecast region, which lists every town inside it, or
 		<a href="/locations">browse all the areas we cover</a>.
 	</p>
 	<ul class="links">

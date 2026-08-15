@@ -48,7 +48,7 @@
 </script>
 
 <svelte:head>
-	<title>Pollen count in {name} today — is pollen high? | ispollenhigh</title>
+	<title>Pollen count in {name} today: is pollen high? | ispollenhigh</title>
 	<meta name="description" content={description} />
 	<link rel="canonical" href={canonical} />
 	<meta property="og:title" content={`Pollen count in ${name} today`} />

@@ -33,7 +33,7 @@
 	<p>
 		We split today's reading into grass, tree and weed pollen, then give each
 		one a level from <em>none</em> through to <em>very high</em>. Most British
-		hayfever is triggered by grass pollen, which peaks from late May through
+		hay fever is triggered by grass pollen, which peaks from late May through
 		July. Tree pollen peaks earlier in spring. Weed pollen runs longest, into
 		autumn.
 	</p>
@@ -48,15 +48,15 @@
 
 	<h2>Why this is free</h2>
 	<p>
-		I built this because I wanted a straight answer for my own hayfever
-		without wading through a weather app. The forecast data was already
-		out there, but nobody was giving it to you as a plain answer for your
-		own town, so I did.
+		I built this for my son. He gets hay fever badly and through the summer my
+		wife would ask me every morning whether he needed his medicine before
+		school. Finding out took longer than it should have, so I made something
+		that answers in about two seconds. I use it for my own hay fever now too.
 	</p>
 	<p>
 		There are no adverts and no paywall. There never will be. I pay for the
-		domain, the hosting and the pollen data myself. If this helped you plan a
-		day out, or explained why your eyes were streaming, you can
+		domain, the hosting and the pollen data myself. If it has saved you the
+		same morning guesswork, you can
 		<a href="https://ko-fi.com/digitalclubb" target="_blank" rel="external noopener"
 			>buy me a coffee<span class="visually-hidden"> (opens in a new tab)</span></a
 		>. A coffee goes towards the running costs.

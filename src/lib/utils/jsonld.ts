@@ -117,7 +117,7 @@ function locationFaq(loc: Location, reading: PollenReading, season: SeasonSummar
 				name: `When is hay fever season in ${loc.name}?`,
 				acceptedAnswer: {
 					'@type': 'Answer',
-					text: `The pollen season in ${loc.name} runs from ${season.overall}, and the worst months are usually ${worst}. ${season.lines.map((l) => l.text).join(' ')}`
+					text: `The pollen season in ${loc.name} runs from ${season.overall}. The worst months are usually ${worst}. ${season.lines.map((l) => l.text).join(' ')}`
 				}
 			},
 			{

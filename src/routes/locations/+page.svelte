@@ -7,13 +7,13 @@
 </script>
 
 <svelte:head>
-	<title>Pollen count by area — every UK town, city and postcode | ispollenhigh</title>
+	<title>Pollen count by area: every UK town, city and postcode | ispollenhigh</title>
 	<meta
 		name="description"
 		content="Today's pollen count for {data.total} UK towns, cities, regions and postcode areas. Pick your area for live grass, tree and weed levels with a five-day outlook."
 	/>
 	<link rel="canonical" href={canonical} />
-	<meta property="og:title" content="Pollen count by area — every UK town and city" />
+	<meta property="og:title" content="Pollen count by area: every UK town and city" />
 	<meta
 		property="og:description"
 		content="Today's pollen count for every UK town, city, region and postcode area."

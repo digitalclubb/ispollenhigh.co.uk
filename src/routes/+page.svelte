@@ -208,7 +208,7 @@
 		in Hackney?" — the site's most important page competing on a borough
 		nobody searches. Users still get their own area in the H1 below.
 	-->
-	<title>Pollen count today — is pollen high in your area? | ispollenhigh</title>
+	<title>Pollen count today: is pollen high in your area? | ispollenhigh</title>
 	<meta
 		name="description"
 		content="Today's UK pollen count, by town and postcode. A straight answer on whether pollen is high right now, with grass, tree and weed levels and a five-day outlook."

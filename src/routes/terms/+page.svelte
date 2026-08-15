@@ -29,7 +29,7 @@
 		to specific plants.
 	</p>
 	<p>
-		ispollenhigh is not a substitute for medical advice. If hayfever is
+		ispollenhigh is not a substitute for medical advice. If hay fever is
 		affecting your health, speak to a pharmacist or your GP.
 	</p>
 

@@ -39,7 +39,7 @@
 		<a href="/terms">Terms</a>
 	</nav>
 	<p class="support">
-		Built by an independent developer, free and with no adverts.
+		Free to use, with no adverts.
 		<a href="https://ko-fi.com/digitalclubb" target="_blank" rel="external noopener"
 			>Buy me a coffee<span class="visually-hidden"> (opens in a new tab)</span></a
 		> if it helped.

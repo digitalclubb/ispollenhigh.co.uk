@@ -29,7 +29,7 @@
 		{
 			name: 'Very high',
 			value: '4',
-			meaning: 'Severe symptoms are likely for sufferers, including people who normally cope. Uncommon, and usually a warm, dry, breezy day at the season peak.'
+			meaning: 'Severe symptoms are likely for sufferers, including people who normally cope. Uncommon. Usually the peak of the season on a warm dry breezy day.'
 		}
 	];
 </script>
@@ -38,7 +38,7 @@
 	<title>What does a high pollen count mean? Levels explained | ispollenhigh</title>
 	<meta
 		name="description"
-		content="What low, moderate, high and very high pollen counts actually mean for hay fever symptoms, how the index is measured in grains per cubic metre, and when counts peak during the day."
+		content="What low, moderate, high and very high pollen counts actually mean for hay fever symptoms, how the index is measured in grains per cubic metre and when counts peak during the day."
 	/>
 	<link rel="canonical" href={canonical} />
 	<meta property="og:title" content="What does a high pollen count mean?" />
@@ -57,7 +57,7 @@
 	<p class="lede">
 		A pollen count is a measurement of how many pollen grains are in a cubic
 		metre of air. Forecasts turn that number into a level from none to very
-		high, because the raw count means little on its own — and the thresholds
+		high, because the raw count means little on its own. The thresholds also
 		differ for grass, tree and weed pollen.
 	</p>
 
@@ -78,14 +78,14 @@
 	<p>
 		For grass pollen, the trigger for the large majority of British hay fever,
 		the traditional Met Office bands are roughly: low below 30 grains per cubic
-		metre of air, moderate 30–49, high 50–149 and very high 150 or more. Tree
+		metre of air, moderate 30 to 49, high 50 to 149 and very high 150 or more. Tree
 		and weed thresholds sit at different numbers because it takes far more
 		nettle pollen than birch pollen to produce the same misery.
 	</p>
 	<p>
 		This site shows a level for each of the three pollen types separately
 		rather than a single blended number, because a "moderate" overall day made
-		up entirely of grass pollen is a bad day if grass is your trigger, and a
+		up entirely of grass pollen is a bad day if grass is your trigger and a
 		non-event if it is not.
 	</p>
 
@@ -101,7 +101,7 @@
 	<h2>Weather matters as much as season</h2>
 	<p>
 		Warm, dry, breezy days give the highest counts. Rain clears pollen from the
-		air, and a properly wet day can drop a high count to low. Thunderstorms are
+		air. A properly wet day can drop a high count to low. Thunderstorms are
 		the exception: the downdraught can concentrate pollen at ground level and
 		humidity can rupture grains into finer fragments that reach deeper into the
 		airways, which is the mechanism behind so-called thunderstorm asthma.

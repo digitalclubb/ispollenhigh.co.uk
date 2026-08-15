@@ -235,7 +235,7 @@ export function locationCopy(loc: Location): LocationCopyVars {
 
 function introFor(loc: Location): string {
 	if (loc.type === 'city') {
-		return `Hayfever sufferers in ${loc.name} should track all three pollen types from March through August.`;
+		return `Hay fever sufferers in ${loc.name} should track all three pollen types from March through August.`;
 	}
 	if (loc.type === 'postcode-area') {
 		return `${loc.name.split(' ')[0]} covers part of ${parentName(loc) ?? 'the UK'} and follows its regional pollen pattern closely.`;
@@ -246,10 +246,10 @@ function introFor(loc: Location): string {
 		// thousand pages with the name swapped.
 		const region = parentName(loc);
 		const where = loc.county ? `${loc.name} sits in ${loc.county}` : `${loc.name} is a UK town`;
-		const pattern = region ? `, and takes its pollen pattern from the ${region} forecast region` : '';
+		const pattern = region ? ` and takes its pollen pattern from the ${region} forecast region` : '';
 		const people = loc.population
-			? ` Around ${formatPopulation(loc.population)} people live here, and hayfever sufferers should track all three pollen types from March through August.`
-			: ' Hayfever sufferers here should track all three pollen types from March through August.';
+			? ` Around ${formatPopulation(loc.population)} people live here. Hay fever sufferers should track all three pollen types from March through August.`
+			: ' Hay fever sufferers here should track all three pollen types from March through August.';
 		return `${where}${pattern}.${people}`;
 	}
 	return `${loc.name} sees the typical UK pollen calendar, with a tree-led spring peak and a grass-led early summer.`;
