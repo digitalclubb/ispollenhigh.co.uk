@@ -46,6 +46,22 @@
 		straight answer, you should get one in under two seconds.
 	</p>
 
+	<h2>Why this is free</h2>
+	<p>
+		I built this because I wanted a straight answer for my own hayfever
+		without wading through a weather app. The forecast data was already
+		out there, but nobody was giving it to you as a plain answer for your
+		own town, so I did.
+	</p>
+	<p>
+		There are no adverts and no paywall. There never will be. I pay for the
+		domain, the hosting and the pollen data myself. If this helped you plan a
+		day out, or explained why your eyes were streaming, you can
+		<a href="https://ko-fi.com/digitalclubb" target="_blank" rel="external noopener"
+			>buy me a coffee<span class="visually-hidden"> (opens in a new tab)</span></a
+		>. A coffee goes towards the running costs.
+	</p>
+
 	<h2>Get in touch</h2>
 	<p>
 		Spotted a problem with a reading or a postcode area? Let us know via the

@@ -38,6 +38,12 @@
 		<a href="/cookies">Cookies</a>
 		<a href="/terms">Terms</a>
 	</nav>
+	<p class="support">
+		Built by an independent developer, free and with no adverts.
+		<a href="https://ko-fi.com/digitalclubb" target="_blank" rel="external noopener"
+			>Buy me a coffee<span class="visually-hidden"> (opens in a new tab)</span></a
+		> if it helped.
+	</p>
 	<p class="legal">
 		<small>
 			Pollen data: Google Pollen API and CAMS via Open-Meteo. Forecasts are
@@ -79,6 +85,25 @@
 		color: var(--ink);
 		text-decoration: underline;
 		text-underline-offset: 0.2em;
+	}
+
+	.support {
+		max-width: 60ch;
+		line-height: var(--lh-base);
+		margin-bottom: var(--sp-3);
+		color: var(--ink-soft);
+	}
+
+	.support a {
+		color: var(--ink);
+		font-weight: var(--weight-medium);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.support a:hover,
+	.support a:focus-visible {
+		color: var(--accent);
 	}
 
 	.legal {
