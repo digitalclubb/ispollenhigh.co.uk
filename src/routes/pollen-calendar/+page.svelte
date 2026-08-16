@@ -189,6 +189,9 @@
 
 	.scroller {
 		overflow-x: auto;
+		/* See SeasonCalendar: positioned so the .visually-hidden cell labels stay
+		   inside this scroller instead of widening the page below ~480px. */
+		position: relative;
 	}
 
 	table {

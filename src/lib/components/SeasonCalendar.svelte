@@ -93,6 +93,11 @@
 
 	.scroller {
 		overflow-x: auto;
+		/* Positioned so the .visually-hidden cell labels and caption (which are
+		   position: absolute) resolve their containing block here rather than the
+		   initial one. Without it they escape this scroller below ~480px, where
+		   the table is wider than the viewport, and widen the whole page. */
+		position: relative;
 	}
 
 	table {
