@@ -8,7 +8,7 @@ import type { PageServerLoad } from './$types';
 export const config = {
 	runtime: 'nodejs22.x',
 	regions: ['lhr1'],
-	isr: { expiration: 1800 }
+	isr: { expiration: 21600 }
 };
 
 export const prerender = false;
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	});
 
 	setHeaders({
-		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
+		'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=43200'
 	});
 
 	// Region pages are the hub every town in that region hangs off, so the

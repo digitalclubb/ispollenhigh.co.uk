@@ -6,38 +6,37 @@ import type { RequestHandler } from './$types';
 /**
  * Lightweight health check.
  *
- * Default mode (`/api/health`) calls the pollen pipeline against a canned
- * London coordinate and reports which provider answered, plus today's
+ * Default mode (`/api/health`) is free: a liveness response plus today's
  * call counts per source (per-region; sum across regions for a global
- * total). External uptime monitors can alert when `source` flips to
- * "synthetic" or the route 5xxs; ops can spot quota issues early via the
- * counter.
+ * total). Point uptime monitors here.
  *
- * Skip mode (`/api/health?upstream=skip`) returns a cheap edge-only
- * liveness response without touching upstream. Use this for high-fanout
- * pings (e.g. status-page liveness checks every few seconds) so they
- * don't burn Google quota.
+ * Probe mode (`/api/health?upstream=probe`) calls the pollen pipeline
+ * against London and reports which provider answered, so `source` flipping
+ * to "synthetic" is visible. It costs one *paid* Google call per 60-second
+ * cache window — a monitor polling it every minute is ~1,440 calls a day
+ * (~$14 at $10/1,000), which is why it is opt-in rather than the default.
+ * Use it by hand, or on a low-frequency schedule.
  *
- * Both modes cache for 60 seconds so polling at minute granularity costs
- * at most one upstream call per minute regardless of monitor fan-out.
- * The probe call passes `countMetrics: false` so health pings don't count
- * themselves toward today's quota.
+ * Both modes cache for 60 seconds. The probe passes `countMetrics: false`
+ * so health pings don't count themselves toward today's quota.
  */
 
 export const config = { regions: ['lhr1'] };
 
+// London's registry centroid, so the probe lands in a paid bucket and so
+// actually exercises the Google path it exists to watch.
 const PROBE = {
-	lat: 51.5,
-	lon: -0.1,
+	lat: 51.5074,
+	lon: -0.1278,
 	locationName: 'London',
 	countMetrics: false,
-	// Always go upstream: a memo hit would mask an outage for up to 30 min.
+	// Always go upstream: a memo hit would mask an outage for up to 6 hours.
 	skipMemo: true
 };
 const CACHE = 'public, s-maxage=60, stale-while-revalidate=120';
 
 export const GET: RequestHandler = async ({ url }) => {
-	if (url.searchParams.get('upstream') === 'skip') {
+	if (url.searchParams.get('upstream') !== 'probe') {
 		return json(
 			{ status: 'ok', source: 'edge', callsToday: readAllCounters() },
 			{ status: 200, headers: { 'Cache-Control': CACHE } }

@@ -8,8 +8,8 @@ Two endpoints, two purposes:
 
 | URL | What it checks | Cost |
 |---|---|---|
-| `https://ispollenhigh.co.uk/api/health` | Full pipeline: edge function + Google Pollen API + Open-Meteo fallback. Returns `{status, source, fetchedAt}`. 200 if `source` is `google` or `open-meteo`, 503 if `synthetic`. | Calls Google Pollen API. ~1 call/min after 60-second cache |
-| `https://ispollenhigh.co.uk/api/health?upstream=skip` | Edge liveness only. Doesn't touch upstream. Returns 200 with `{status: 'ok', source: 'edge'}`. | Free |
+| `https://ispollenhigh.co.uk/api/health` | Edge liveness only. Doesn't touch upstream. Returns 200 with `{status: 'ok', source: 'edge'}` and today's per-source call counts. | Free |
+| `https://ispollenhigh.co.uk/api/health?upstream=probe` | Full pipeline: edge function + Google Pollen API + Open-Meteo fallback. Returns `{status, source, fetchedAt}`. 200 if `source` is `google` or `open-meteo`, 503 if `synthetic`. | One **paid** Google call per 60-second cache window. A 5-minute monitor is ~288 calls/day (~£2/day at $10 per 1,000) |
 
 ## Recommended monitor setup
 
@@ -18,12 +18,12 @@ Free tier of either [UptimeRobot](https://uptimerobot.com/) or [Better Uptime](h
 **Two monitors per service:**
 
 1. **Liveness** (every minute):
-   - URL: `https://ispollenhigh.co.uk/api/health?upstream=skip`
+   - URL: `https://ispollenhigh.co.uk/api/health`
    - Expect: HTTP 200, body contains `"status":"ok"`
    - Alert: after 2 consecutive failures (avoids single-region noise)
 
-2. **Data freshness** (every 5 minutes):
-   - URL: `https://ispollenhigh.co.uk/api/health`
+2. **Data freshness** (every 6 hours — *not* every 5 minutes, each poll is a paid call):
+   - URL: `https://ispollenhigh.co.uk/api/health?upstream=probe`
    - Expect: HTTP 200, body contains `"source":"google"` (or `"source":"open-meteo"` is acceptable degraded)
    - Alert: after 3 consecutive failures, or when `source` flips to `synthetic`
 
@@ -39,9 +39,11 @@ A failed liveness monitor means Vercel itself is down or the project is misconfi
 
 ### `x-pollen-source: open-meteo`
 
-**Cause**: Google Pollen API failed. Either rate-limited (quota cap hit), key restriction blocks server-side calls, or upstream outage.
+**Expected on every page except the 50 cities.** Only the city buckets in `PAID_BUCKETS` (`src/lib/server/pollen-service.ts`) call Google; towns, postcode areas and regions use Open-Meteo by design, because Google bills $10 per 1,000 calls and crawlers fetch those ~1,200 pages far more often than people read them.
 
-**Fix**: Check Vercel function logs for `pollen-service: google failed, falling back`. The follow-on error message will say what went wrong. Common: HTTP referrer restriction on the API key (server calls have no Referer).
+**Cause when it appears on a city page**: Google Pollen API failed. Either rate-limited (daily quota cap hit), key restriction blocks server-side calls, or upstream outage.
+
+**Fix**: Check Vercel function logs for `pollen-service: google failed`. The follow-on error message will say what went wrong. Common: HTTP referrer restriction on the API key (server calls have no Referer).
 
 ### 308 redirect loop on `/api/pollen`
 

@@ -12,16 +12,21 @@ import type { PageServerLoad } from './$types';
  */
 
 /**
- * Vercel ISR: page is generated on demand and cached at the edge for 30
- * minutes, matching the upstream pollen API cache. Hot pages serve as
- * static HTML to crawlers and to repeat visitors; the function only runs
- * when the cache expires. ISR requires the Node runtime so the edge config
- * stays on /api/pollen and /q.
+ * Vercel ISR: page is generated on demand and cached at the edge for 6
+ * hours, matching the upstream pollen memo. Hot pages serve as static HTML
+ * to crawlers and to repeat visitors; the function only runs when the cache
+ * expires. ISR requires the Node runtime so the edge config stays on
+ * /api/pollen and /q.
+ *
+ * The window is 6 h rather than 30 min because both providers publish a
+ * *daily* forecast: revalidating 48 times a day bought no fresh data and
+ * multiplied upstream calls by 48 across ~1,260 crawled pages. 6 h keeps the
+ * date label honest either side of midnight without paying for the rest.
  */
 export const config = {
 	runtime: 'nodejs22.x',
 	regions: ['lhr1'],
-	isr: { expiration: 1800 }
+	isr: { expiration: 21600 }
 };
 
 export const prerender = false;
@@ -36,10 +41,10 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		locationName: location.name
 	});
 
-	// Match the upstream /api/pollen cache so the page never holds older
-	// data than the data behind it.
+	// Match the ISR window so the page never holds older data than the data
+	// behind it.
 	setHeaders({
-		'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
+		'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=43200'
 	});
 
 	/**
