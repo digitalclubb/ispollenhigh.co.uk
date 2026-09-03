@@ -38,10 +38,22 @@ jobs:
       # added in that build. A page that only exists in the new build is the
       # only honest readiness signal, and it costs no Google Pollen quota
       # because it is prerendered.
+      # Vercel's Bot Protection ruleset challenges anything that doesn't
+      # behave like a browser, which includes this curl and Lighthouse's
+      # headless Chrome running from a datacenter IP: both get HTTP 429 with
+      # `x-vercel-mitigated: challenge`. Verified crawlers like Googlebot are
+      # excluded from the ruleset automatically, so this is CI's problem
+      # only. A WAF custom rule with a Bypass action, matching the header
+      # below and ordered above the managed rulesets, lets CI through — see
+      # docs/RUNBOOK.md for the rule and the secret.
       - name: Wait for the new deployment to be live
+        env:
+          WAF_BYPASS_TOKEN: ${{ secrets.WAF_BYPASS_TOKEN }}
         run: |
           for i in $(seq 1 36); do
-            if curl -sf -o /dev/null --max-time 5 "https://ispollenhigh.co.uk/locations"; then
+            if curl -sf -o /dev/null --max-time 5 \
+              -H "x-waf-bypass: $WAF_BYPASS_TOKEN" \
+              "https://ispollenhigh.co.uk/locations"; then
               echo "Production reachable on attempt $i"
               exit 0
             fi
@@ -50,6 +62,16 @@ jobs:
           done
           echo "Timed out waiting for production"
           exit 1
+
+      # Lighthouse needs the same header, and the config file is committed,
+      # so the token is injected into a throwaway copy at run time.
+      - name: Add the WAF bypass header to the Lighthouse config
+        env:
+          WAF_BYPASS_TOKEN: ${{ secrets.WAF_BYPASS_TOKEN }}
+        run: |
+          jq --arg token "$WAF_BYPASS_TOKEN" \
+            '.ci.collect.settings.extraHeaders = ("{\"x-waf-bypass\":\"" + $token + "\"}")' \
+            .lighthouserc.json > .lighthouserc.ci.json
 
       - name: Run Lighthouse on production URLs
         uses: treosh/lighthouse-ci-action@v12
@@ -62,6 +84,6 @@ jobs:
             https://ispollenhigh.co.uk/region/south-east
             https://ispollenhigh.co.uk/locations
             https://ispollenhigh.co.uk/pollen-calendar
-          configPath: ./.lighthouserc.json
+          configPath: ./.lighthouserc.ci.json
           uploadArtifacts: true
           temporaryPublicStorage: true

@@ -30,6 +30,8 @@ const PROBE = {
 	lon: -0.1278,
 	locationName: 'London',
 	countMetrics: false,
+	// The probe exists to watch the Google path, so it asks for it explicitly.
+	paid: true,
 	// Always go upstream: a memo hit would mask an outage for up to 6 hours.
 	skipMemo: true
 };

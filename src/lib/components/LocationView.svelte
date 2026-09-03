@@ -24,13 +24,44 @@
 		copy: RenderedCopy;
 		calendar: CalendarView;
 		nearby: DirectoryLink[];
+		/** /api/pollen URL for this place, pre-bucketed. */
+		pollenPath: string;
 		/** Extra crawlable links, e.g. the child list on a region page. */
 		children?: Snippet;
 	};
 
-	let { reading, name, canonical, jsonLd, copy, calendar, nearby, children }: Props = $props();
+	let { reading, name, canonical, jsonLd, copy, calendar, nearby, pollenPath, children }: Props =
+		$props();
 
-	onMount(() => markAnswerRendered());
+	/**
+	 * The server renders the free provider's reading, because page rendering is
+	 * driven by crawlers sweeping ~1,260 URLs and the paid API is $10 per 1,000
+	 * calls. A real browser gets the paid reading instead: /api/pollen only
+	 * spends money on requests that look like a person, and its response is
+	 * CDN-cached for 6 hours per coordinate bucket, so one call covers everyone
+	 * looking at the same place.
+	 *
+	 * Failure is silent by design — the SSR'd answer is already on screen and
+	 * correct, this only sharpens it.
+	 */
+	let live = $state<PollenReading | null>(null);
+	const shown = $derived(live ?? reading);
+
+	onMount(() => {
+		markAnswerRendered();
+
+		const controller = new AbortController();
+		fetch(pollenPath, { signal: controller.signal })
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data: PollenReading | null) => {
+				// Keep this page's own name: /api/pollen snaps to the nearest
+				// registry centroid, which for TW is "Richmond", and the H1 must
+				// not rename itself on hydration.
+				if (data?.forecast?.length) live = { ...data, location: reading.location };
+			})
+			.catch(() => {});
+		return () => controller.abort();
+	});
 
 	/**
 	 * "pollen count <place>" is how people actually search — roughly an order
@@ -41,7 +72,7 @@
 	 * answer goes in the description instead, which Google regenerates from
 	 * the page far more often.
 	 */
-	const lower = $derived(levelLabel(reading.overall.level).toLowerCase());
+	const lower = $derived(levelLabel(shown.overall.level).toLowerCase());
 	const description = $derived(
 		`Pollen is ${lower} in ${name} today. Live grass, tree and weed pollen counts with a five-day outlook and local peak-season dates.`
 	);
@@ -63,7 +94,7 @@
 	{@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
-<AnswerView {reading} />
+<AnswerView reading={shown} />
 
 <div class="share-row">
 	<ShareButton title={`Is pollen high in ${name}?`} url={canonical} />

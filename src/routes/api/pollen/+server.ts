@@ -1,5 +1,6 @@
 import { json, redirect } from '@sveltejs/kit';
 import { parseCoords } from '$lib/server/cache-key';
+import { looksHuman } from '$lib/server/human';
 import { getPollen } from '$lib/server/pollen-service';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import { nearestKnown } from '$lib/utils/geo';
@@ -18,6 +19,13 @@ import type { RequestHandler } from './$types';
  * Rate-limited to 60 requests/minute per IP per region. The CDN cache
  * absorbs most legitimate traffic so this only kicks in for cache-busting
  * patterns or someone scraping the data.
+ *
+ * This is the only route that asks for the paid Google lookup, and only when
+ * the request looks like a browser. Page rendering — the thing crawlers
+ * actually drive, across ~1,260 URLs — always uses the free provider, so the
+ * bill tracks how many people visit rather than how hungry the crawlers are.
+ * A bot response is marked no-store so it can never occupy the shared CDN
+ * entry and downgrade the humans behind it.
  */
 
 // Default runtime (Node via Fluid Compute). The dedicated 'edge' runtime
@@ -75,15 +83,19 @@ export const GET: RequestHandler = async ({ url, request }) => {
 		);
 	}
 
+	const human = looksHuman(request.headers);
 	const reading = await getPollen({
 		lat: nearest.lat,
 		lon: nearest.lon,
-		locationName: nearest.name
+		locationName: nearest.name,
+		paid: human
 	});
 
 	return json(reading, {
 		headers: {
-			'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=43200',
+			'Cache-Control': human
+				? 'public, s-maxage=21600, stale-while-revalidate=43200'
+				: 'private, no-store',
 			Vary: 'Accept-Encoding',
 			'X-Pollen-Source': reading.source
 		}

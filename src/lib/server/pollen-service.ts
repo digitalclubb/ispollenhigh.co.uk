@@ -1,15 +1,15 @@
 import { env } from '$env/dynamic/private';
-import { CITIES } from '$lib/data/locations';
 import type { PollenReading } from '$lib/types/pollen';
 import { bucketCoords } from './cache-key';
 import { fetchGooglePollen } from './google-pollen';
-import { incCounter } from './metrics';
+import { incCounter, readCounter } from './metrics';
 import { fetchOpenMeteoPollen } from './open-meteo';
 import { syntheticReading } from './synthetic';
 
 /**
- * Orchestrates the pollen lookup. Google for the cities, Open-Meteo
- * everywhere else, synthetic data when no API key is configured (local dev).
+ * Orchestrates the pollen lookup. Google when the caller asks and pays for
+ * it, Open-Meteo otherwise, synthetic data when no API key is configured
+ * (local dev).
  *
  * Coordinates are bucketed before any upstream call so cache pressure stays
  * sane regardless of caller precision.
@@ -28,7 +28,7 @@ const TIMEOUT_MS = 4_000;
  * warm serverless instance handling a crawl sweep can answer neighbouring
  * towns — Barry, Penarth and Cardiff share a bucket — without going upstream
  * again. Instances are short-lived, so treat this as a bonus rather than the
- * thing keeping the bill down; PAID_BUCKETS below is what does that.
+ * thing keeping the bill down; the `paid` flag below is what does that.
  *
  * TTL matches the ISR window (6 h) so a cached page never fronts data older
  * than the page's own revalidation period. Bounded so an instance that survives a
@@ -65,45 +65,24 @@ function memoSet(key: string, fetchedAt: string, data: MemoEntry['data']): void 
 }
 
 /**
- * Coordinate buckets that get the paid Google lookup: the biggest cities,
- * in the registry's population order.
+ * Hard ceiling on paid Google calls per day, per instance.
  *
- * Google's Pollen SKU is $10 per 1,000 calls with a 5,000/month free cap, and
- * the site serves ~1,260 location pages that crawlers fetch far more often
- * than people read them. Calling Google for every page ties the bill to
- * crawler appetite rather than to audience: one daily sweep of the town pages
- * is ~$380/month on its own, and a crawler working through every 6-hour ISR
- * window is several times that.
+ * Google's Pollen SKU is $10 per 1,000 calls with a 5,000/month free cap.
+ * The gate that matters is the caller's — only /api/pollen asks for a paid
+ * call, and only when the request looks like a browser (see `looksHuman`) —
+ * so crawler volume no longer drives the bill. This is the backstop for when
+ * that gate is wrong: a bot that renders JS, or a burst of real traffic.
  *
- * Everywhere outside these buckets uses Open-Meteo, which is free and already
- * mapped onto the same reading shape. There is no paid fallback for those
- * pages: an Open-Meteo outage on a town page degrades to the synthetic
- * reading rather than reopening the meter across 1,200 crawled pages.
+ * Tune with GOOGLE_POLLEN_DAILY_CAP. 500/day is ~$5/day worst case, and real
+ * usage sits far below it because /api/pollen is CDN-cached for 6 hours per
+ * coordinate bucket — one paid call covers every visitor to that bucket.
  *
- * `PAID_CITY_COUNT` is the cost knob. Each city bucket also catches the towns
- * and postcode areas within ~5 km of it, and ISR revalidates per URL, so the
- * worst case is roughly `urls × 4 calls/day`:
- *
- *   10 cities →  23 URLs →  2,760 calls/month → free
- *   20 cities →  46 URLs →  5,520 calls/month → ~$5/month
- *   50 cities → 108 URLs → 12,960 calls/month → ~$80/month
- *
- * 20 keeps every city anyone actually searches for on Google's data while
- * staying at the edge of the free cap.
+ * ponytail: the counter is per-instance module memory, so the true ceiling is
+ * cap × live instances. Promote to Vercel KV if the bill needs a real cap.
  */
-const PAID_CITY_COUNT = 20;
-
-const PAID_BUCKETS = new Set(
-	CITIES.slice(0, PAID_CITY_COUNT).map((c) => {
-		const b = bucketCoords(c.lat, c.lon);
-		return `${b.lat},${b.lon}`;
-	})
-);
-
-/** Whether a coordinate resolves to a city bucket, i.e. gets the paid call. */
-export function usesPaidProvider(lat: number, lon: number): boolean {
-	const b = bucketCoords(lat, lon);
-	return PAID_BUCKETS.has(`${b.lat},${b.lon}`);
+function paidBudgetLeft(): boolean {
+	const cap = Number(env.GOOGLE_POLLEN_DAILY_CAP ?? 500);
+	return !Number.isFinite(cap) || readCounter('google') < cap;
 }
 
 export async function getPollen(args: {
@@ -118,6 +97,13 @@ export async function getPollen(args: {
 	 * total Google outage — exactly the failure it exists to detect.
 	 */
 	skipMemo?: boolean;
+	/**
+	 * Ask for the paid Google lookup, with Open-Meteo as fallback. Only
+	 * /api/pollen sets this, and only for requests that look like a browser:
+	 * page rendering (which crawlers drive) stays on the free provider, so
+	 * the bill tracks audience rather than crawler appetite.
+	 */
+	paid?: boolean;
 }): Promise<PollenReading> {
 	const { lat, lon } = bucketCoords(args.lat, args.lon);
 	const apiKey = env.GOOGLE_POLLEN_API_KEY;
@@ -130,14 +116,19 @@ export async function getPollen(args: {
 		return syntheticReading({ lat, lon, locationName: args.locationName });
 	}
 
+	const paid = args.paid === true && paidBudgetLeft();
+
 	const key = `${lat},${lon}`;
-	const cached = args.skipMemo ? undefined : memoGet(key);
+	// A paid caller ignores a free memo entry — otherwise one crawler-warmed
+	// bucket would downgrade every human landing on that instance for 6 hours.
+	const hit = args.skipMemo ? undefined : memoGet(key);
+	const cached = hit && (!paid || hit.data.source === 'google') ? hit : undefined;
 	if (cached) {
 		if (shouldCount) incCounter('memo');
 		return { location, fetchedAt: cached.fetchedAt, ...cached.data };
 	}
 
-	const providers: [string, () => Promise<MemoEntry['data']>][] = usesPaidProvider(lat, lon)
+	const providers: [string, () => Promise<MemoEntry['data']>][] = paid
 		? [
 				['google', () => fetchGooglePollen({ lat, lon, apiKey })],
 				['open-meteo', () => fetchOpenMeteoPollen({ lat, lon })]

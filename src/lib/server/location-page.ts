@@ -3,6 +3,7 @@ import { renderedCopy } from '$lib/data/local-copy';
 import type { Location } from '$lib/data/locations';
 import { getCanonicalPath } from '$lib/data/paths';
 import { calendarFor, MONTHS_SHORT, type PollenKind, seasonSummary } from '$lib/data/season';
+import { bucketCoords } from '$lib/server/cache-key';
 import type { PollenReading } from '$lib/types/pollen';
 import { nearbyLocations } from '$lib/utils/geo';
 import { jsonLdScript, locationJsonLd } from '$lib/utils/jsonld';
@@ -45,8 +46,19 @@ export function locationPageData(location: Location, reading: PollenReading) {
 		}))
 	};
 
+	/**
+	 * Where the browser goes to upgrade this page's reading. Pre-bucketed and
+	 * fixed to 2 d.p. so it matches /api/pollen's canonical form and skips the
+	 * 308. The page itself renders the free provider's data — that is what
+	 * crawlers see and what Google indexes — and a real browser swaps in the
+	 * paid reading after hydration.
+	 */
+	const b = bucketCoords(location.lat, location.lon);
+	const pollenPath = `/api/pollen?lat=${b.lat.toFixed(2)}&lon=${b.lon.toFixed(2)}`;
+
 	return {
 		name: location.name,
+		pollenPath,
 		canonical: `${SITE}${getCanonicalPath(location)}`,
 		jsonLd: jsonLdScript(locationJsonLd(location, reading, summary)),
 		copy: renderedCopy(location),

@@ -14,6 +14,7 @@
 	copy={data.copy}
 	calendar={data.calendar}
 	nearby={data.nearby}
+	pollenPath={data.pollenPath}
 >
 	{#if data.children}
 		<RegionChildren

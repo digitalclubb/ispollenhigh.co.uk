@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # claude per-project local settings
 .claude/settings.local.json
+
+# Generated in CI: .lighthouserc.json plus the WAF bypass header
+.lighthouserc.ci.json

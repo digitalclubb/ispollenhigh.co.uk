@@ -41,10 +41,14 @@ interface OpenMeteoResponse {
  *   tree:  low <15, moderate 15-89, high 90-499, very high 500+ grains/m³
  *          (birch-leaning; alder and olive use the same bands here)
  *   weed:  low <10, moderate 10-49, high 50-99,  very high 100+ grains/m³
- * "very-low" is split out from "low" for our 6-step scale; "none" is grains < 1.
+ * "very-low" is split out from "low" for our 6-step scale. "none" means
+ * literally zero: CAMS reports fractional concentrations, and Google's UPI
+ * calls 0.4 grains/m³ "Very Low", not "None". Treating anything under one
+ * grain as "none" made every out-of-season page read "No pollen in X today",
+ * which looks like the site is broken rather than like a quiet day.
  */
 function bandGrass(grains: number): PollenLevel {
-	if (grains < 1) return 'none';
+	if (grains <= 0) return 'none';
 	if (grains < 15) return 'very-low';
 	if (grains < 30) return 'low';
 	if (grains < 50) return 'moderate';
@@ -53,7 +57,7 @@ function bandGrass(grains: number): PollenLevel {
 }
 
 function bandTree(grains: number): PollenLevel {
-	if (grains < 1) return 'none';
+	if (grains <= 0) return 'none';
 	if (grains < 8) return 'very-low';
 	if (grains < 15) return 'low';
 	if (grains < 90) return 'moderate';
@@ -62,7 +66,7 @@ function bandTree(grains: number): PollenLevel {
 }
 
 function bandWeed(grains: number): PollenLevel {
-	if (grains < 1) return 'none';
+	if (grains <= 0) return 'none';
 	if (grains < 5) return 'very-low';
 	if (grains < 10) return 'low';
 	if (grains < 50) return 'moderate';
@@ -169,7 +173,13 @@ export async function fetchOpenMeteoPollen(args: {
 	const times = hourly?.time ?? [];
 	if (!hourly || times.length === 0) throw new Error('Open-Meteo: empty hourly');
 
-	const dayCount = Math.min(5, Math.ceil(times.length / 24));
+	// CAMS runs ~4 days ahead, so the tail of a 5-day window comes back as
+	// nulls. Without this the strip shows a fabricated "none" day at the end.
+	const fields = [GRASS_FIELD, ...TREE_FIELDS, ...WEED_FIELDS];
+	const lastHour = Math.max(
+		...fields.map((f) => (hourly[f] ?? []).findLastIndex((v) => v !== null && v !== undefined))
+	);
+	const dayCount = Math.max(1, Math.min(5, Math.ceil((lastHour + 1) / 24)));
 	const forecast: ForecastDay[] = [];
 	for (let i = 0; i < dayCount; i++) {
 		const t = times[i * 24];

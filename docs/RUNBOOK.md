@@ -29,6 +29,37 @@ Free tier of either [UptimeRobot](https://uptimerobot.com/) or [Better Uptime](h
 
 A failed liveness monitor means Vercel itself is down or the project is misconfigured. A failed freshness monitor means upstream pollen data is unavailable; the site still works (returns synthetic data) but should be looked at.
 
+## Firewall: bot protection
+
+Vercel WAF → Bot Management → **Bot Protection: Challenge**. It serves a JavaScript challenge to anything that doesn't behave like a browser, answering HTTP 429 with `x-vercel-mitigated: challenge`.
+
+**Verified crawlers are excluded automatically** — Googlebot and Bingbot are verified by IP range and reverse DNS, so indexing is unaffected. Confirm after any firewall change by re-inspecting a page in Search Console and checking `page_fetch_state` is still `SUCCESSFUL`.
+
+**Our own automation is not excluded.** CI and uptime monitors get challenged like any other non-browser client. They get through via a WAF custom rule:
+
+| Setting | Value |
+|---|---|
+| Match | Header `x-waf-bypass` equals the shared token |
+| Action | **Bypass** |
+| Order | Above the WAF Managed Rulesets (custom rules run first, but keep it at the top of the custom list) |
+
+The same token lives in GitHub Actions as the `WAF_BYPASS_TOKEN` secret, used by the deployment-readiness curl and injected into the Lighthouse config. Rotate it in both places together. Anyone holding the token skips bot protection, so treat it as a credential.
+
+**Uptime monitors** must send the same header (UptimeRobot: Custom HTTP Headers; Better Stack: Request headers). A monitor without it alerts on 429s that are the firewall doing its job.
+
+**AI crawlers are a separate ruleset.** Bot Protection excludes verified bots, and most AI crawlers are verified — so GPTBot, ClaudeBot and friends pass straight through it. Stopping them (and the upstream calls their sweeps cause) means setting **AI Bots Ruleset → Deny** in the same Bot Management section.
+
+## Cost control
+
+Google's Pollen SKU is $10 per 1,000 calls with a 5,000/month free cap. Four things keep the bill on audience rather than on crawlers, in order of how much work they do:
+
+1. **Server rendering never calls Google.** The free Open-Meteo provider backs every SSR'd page, so a crawl sweep of all ~1,260 URLs costs nothing.
+2. **`looksHuman()` gates `/api/pollen`.** A bot that renders our JavaScript still gets the free provider, and its response is returned `private, no-store` so it can't take the shared CDN entry and downgrade the people behind it.
+3. **CDN cache, 6 hours per 0.05° bucket.** One paid call covers everyone looking at the same place for a quarter of a day.
+4. **`GOOGLE_POLLEN_DAILY_CAP`** (default 500) is the backstop for when the gate is wrong. Past it, everyone falls back to Open-Meteo until the UTC day rolls over. Note the counter is per-instance module memory, so the real ceiling is cap × live instances — treat it as a brake, not a hard limit.
+
+Watch `callsToday.google` on `/api/health` to see where you actually sit. Turn the cap down if the bill creeps; if it's routinely pinned, that's genuine traffic and the cap is the wrong lever.
+
 ## Common failure modes and fixes
 
 ### `x-pollen-source: synthetic` everywhere
@@ -39,9 +70,13 @@ A failed liveness monitor means Vercel itself is down or the project is misconfi
 
 ### `x-pollen-source: open-meteo`
 
-**Expected on every page except the 50 cities.** Only the city buckets in `PAID_BUCKETS` (`src/lib/server/pollen-service.ts`) call Google; towns, postcode areas and regions use Open-Meteo by design, because Google bills $10 per 1,000 calls and crawlers fetch those ~1,200 pages far more often than people read them.
+**Expected in server-rendered HTML, everywhere.** Page rendering never calls Google. Crawlers drive almost all of it — ~1,260 URLs, re-fetched every 6-hour ISR window — and Google bills $10 per 1,000 calls, so tying page renders to the paid API tied the bill to crawler appetite rather than to audience.
 
-**Cause when it appears on a city page**: Google Pollen API failed. Either rate-limited (daily quota cap hit), key restriction blocks server-side calls, or upstream outage.
+Real visitors get the Google reading a moment later: `LocationView` fetches `/api/pollen` on mount and swaps it in. `/api/pollen` is the only route that asks for a paid call, and only when `looksHuman()` (`src/lib/server/human.ts`) says the request is a browser — same-origin `Sec-Fetch-Site` plus a user-agent that doesn't name itself a bot. That last check is what excludes Googlebot and Bingbot, which do execute the page's JavaScript.
+
+So: **view source shows `open-meteo`, the rendered page shows `google`.** That is working as designed.
+
+**Cause when a browser also shows `open-meteo`**: Google Pollen API failed, or the daily budget is spent. Either rate-limited, key restriction blocks server-side calls, upstream outage, or `google` in `/api/health`'s `callsToday` has hit `GOOGLE_POLLEN_DAILY_CAP` (default 500/day/instance).
 
 **Fix**: Check Vercel function logs for `pollen-service: google failed`. The follow-on error message will say what went wrong. Common: HTTP referrer restriction on the API key (server calls have no Referer).
 
