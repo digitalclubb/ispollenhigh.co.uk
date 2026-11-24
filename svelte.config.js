@@ -34,7 +34,7 @@ const config = {
 				// the <script> tag in src/app.html for the regen one-liner.
 				'script-src': [
 					'self',
-					// Cloudflare Web Analytics beacon, injected at the edge.
+					// Cloudflare Web Analytics beacon (src/app.html).
 					'https://static.cloudflareinsights.com',
 					'sha256-YjRSrAKEGHPwjPxI6ABzc0d/mNrZGyyxmPVARbQXKlU='
 				],

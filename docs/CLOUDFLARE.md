@@ -48,8 +48,8 @@ Test on `https://ispollenhigh.<account>.workers.dev`:
 
 ## 3. Cutover
 
-- [ ] Web Analytics → Add site → ispollenhigh.co.uk → automatic setup (injects the
-      beacon on proxied traffic; CSP already allows it).
+- [ ] Web Analytics → Add site → ispollenhigh.co.uk with automatic setup **off**.
+      Auto-injection skips Worker responses, so the beacon lives in `src/app.html`.
 - [ ] Rules → Redirect Rules → template **Redirect from WWW to root** (308, keep
       path and query).
 - [ ] Workers → ispollenhigh → Settings → Domains & Routes → Add route
@@ -71,8 +71,9 @@ curl -sI https://www.ispollenhigh.co.uk/london | grep -i location
 
 ## 4. After cutover
 
-- [ ] Add the route to `wrangler.jsonc` so it is version-controlled:
-      `"routes": [{ "pattern": "ispollenhigh.co.uk/*", "zone_name": "ispollenhigh.co.uk" }]`
+- [ ] Swap the route for a custom domain (done 2026-11-24): delete the apex A
+      record, attach `ispollenhigh.co.uk` as a Worker custom domain, delete the
+      route. `wrangler.jsonc` has `"custom_domain": true` to match.
 - [ ] Vercel → Project → Settings → Git → **Disconnect** (otherwise main tries to
       build there and fails).
 - [ ] Workers → ispollenhigh → Settings → Builds → connect the GitHub repo. Build

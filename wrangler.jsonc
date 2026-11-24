@@ -5,6 +5,7 @@
 	"compatibility_date": "2026-11-01",
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	// CSP violation reports and pollen-service warnings land here.
-	"observability": { "enabled": true }
-	// Custom domain is attached at cutover; see docs/CLOUDFLARE.md.
+	"observability": { "enabled": true },
+	// www redirects to the apex via a zone Redirect Rule, not this Worker.
+	"routes": [{ "pattern": "ispollenhigh.co.uk", "custom_domain": true }]
 }

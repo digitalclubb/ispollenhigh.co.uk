@@ -1,2 +1,2 @@
-// Analytics: Cloudflare Web Analytics, injected at the edge (see docs/CLOUDFLARE.md).
+// Analytics: Cloudflare Web Analytics beacon in src/app.html.
 export const trailingSlash = 'never';
