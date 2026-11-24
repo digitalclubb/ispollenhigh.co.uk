@@ -13,8 +13,6 @@ import type { RequestHandler } from './$types';
  * emits — the old sitemap listed the bare origin, which is a different URL.
  */
 
-export const config = { regions: ['lhr1'] };
-
 const PAGES = [
 	'/',
 	'/locations',

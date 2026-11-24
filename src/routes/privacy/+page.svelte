@@ -36,12 +36,12 @@
 
 	<h2>Analytics</h2>
 	<p>
-		We use Vercel Web Analytics and Vercel Speed Insights, both in cookieless
-		mode. Web Analytics records anonymous aggregate counts of page views and
-		the pages people land on. Speed Insights collects anonymous Core Web
-		Vitals (loading speed, layout stability, interaction responsiveness) so
-		we can keep the site fast. Neither sets cookies, neither uses device
-		fingerprinting and neither sends anything to advertisers.
+		We use Cloudflare Web Analytics in its cookieless form. It records
+		anonymous aggregate counts of page views and the pages people land on.
+		It also collects anonymous Core Web Vitals (loading speed, layout
+		stability, interaction responsiveness) so we can keep the site fast. It
+		sets no cookies, uses no device fingerprinting and sends nothing to
+		advertisers.
 	</p>
 
 	<h2>Data we never collect</h2>

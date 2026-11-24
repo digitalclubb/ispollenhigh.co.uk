@@ -1,0 +1,10 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "ispollenhigh",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-11-01",
+	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
+	// CSP violation reports and pollen-service warnings land here.
+	"observability": { "enabled": true }
+	// Custom domain is attached at cutover; see docs/CLOUDFLARE.md.
+}

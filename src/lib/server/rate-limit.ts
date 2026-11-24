@@ -1,10 +1,10 @@
 /**
  * Cheap in-memory rate limiter for the edge function. Edge isolates are
  * per-region so the bucket map is incidentally per-region too; a determined
- * attacker hitting multiple Vercel POPs gets `n × limit`. This is good
+ * attacker hitting multiple edge POPs gets `n × limit`. This is good
  * enough as a defence-in-depth layer alongside the CDN cache and the
- * upstream quota cap. For tighter rate limiting promote this to Vercel KV
- * or Upstash Redis so counters are shared across regions; the signature
+ * upstream quota cap. For tighter rate limiting promote this to a
+ * Durable Object so counters are shared across regions; the signature
  * here is a drop-in.
  */
 
@@ -56,6 +56,9 @@ export function checkRateLimit(
  *  generic key when nothing is available so we never crash on it. */
 export function clientKey(headers: Headers): string {
 	return (
-		headers.get('x-real-ip') ?? headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+		headers.get('cf-connecting-ip') ??
+		headers.get('x-real-ip') ??
+		headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+		'unknown'
 	);
 }

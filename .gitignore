@@ -30,3 +30,4 @@ pnpm-debug.log*
 
 # Generated in CI: .lighthouserc.json plus the WAF bypass header
 .lighthouserc.ci.json
+.wrangler

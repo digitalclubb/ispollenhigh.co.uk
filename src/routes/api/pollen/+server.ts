@@ -28,12 +28,6 @@ import type { RequestHandler } from './$types';
  * entry and downgrade the humans behind it.
  */
 
-// Default runtime (Node via Fluid Compute). The dedicated 'edge' runtime
-// is deprecated by adapter-vercel.
-export const config = {
-	regions: ['lhr1']
-};
-
 const COORD_PRECISION = 2;
 
 export const GET: RequestHandler = async ({ url, request }) => {

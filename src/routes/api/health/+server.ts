@@ -21,8 +21,6 @@ import type { RequestHandler } from './$types';
  * so health pings don't count themselves toward today's quota.
  */
 
-export const config = { regions: ['lhr1'] };
-
 // London's registry centroid, so the probe lands in a paid bucket and so
 // actually exercises the Google path it exists to watch.
 const PROBE = {

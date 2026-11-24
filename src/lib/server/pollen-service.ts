@@ -78,7 +78,7 @@ function memoSet(key: string, fetchedAt: string, data: MemoEntry['data']): void 
  * coordinate bucket — one paid call covers every visitor to that bucket.
  *
  * ponytail: the counter is per-instance module memory, so the true ceiling is
- * cap × live instances. Promote to Vercel KV if the bill needs a real cap.
+ * cap × live instances. Promote to a Durable Object if the bill needs a real cap.
  */
 function paidBudgetLeft(): boolean {
 	const cap = Number(env.GOOGLE_POLLEN_DAILY_CAP ?? 500);

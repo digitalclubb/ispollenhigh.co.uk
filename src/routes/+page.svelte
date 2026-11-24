@@ -26,8 +26,8 @@
 	let override = $state<PollenReading | null>(null);
 	const reading = $derived<PollenReading>(override ?? data.reading);
 
-	// The server-rendered location is an IP-based guess via Vercel geo
-	// headers and is often miles off (Twickenham resolves to Hackney for
+	// The server-rendered location is an IP-based guess via Cloudflare
+	// geolocation and is often miles off (Twickenham resolves to Hackney for
 	// many UK ISPs). Once the user grants browser geolocation we have
 	// proper coords and the caveat goes away.
 	const approximate = $derived(override === null);

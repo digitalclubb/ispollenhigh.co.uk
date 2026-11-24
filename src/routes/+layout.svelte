@@ -3,9 +3,6 @@
 	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
 	import UpdatePrompt from '$lib/components/UpdatePrompt.svelte';
 
-	// Analytics is mounted in `+layout.ts` per Vercel's SvelteKit guidance
-	// so route changes are tracked end-to-end.
-
 	let { children } = $props();
 </script>
 

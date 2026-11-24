@@ -12,23 +12,15 @@ import type { PageServerLoad } from './$types';
  */
 
 /**
- * Vercel ISR: page is generated on demand and cached at the edge for 6
- * hours, matching the upstream pollen memo. Hot pages serve as static HTML
- * to crawlers and to repeat visitors; the function only runs when the cache
- * expires. ISR requires the Node runtime so the edge config stays on
- * /api/pollen and /q.
+ * Cached at the edge for 6 hours by adapter-cloudflare's Cache API layer,
+ * keyed on the s-maxage set below. Hot pages serve as cached HTML to crawlers
+ * and repeat visitors; the Worker only renders when the entry expires.
  *
  * The window is 6 h rather than 30 min because both providers publish a
  * *daily* forecast: revalidating 48 times a day bought no fresh data and
  * multiplied upstream calls by 48 across ~1,260 crawled pages. 6 h keeps the
  * date label honest either side of midnight without paying for the rest.
  */
-export const config = {
-	runtime: 'nodejs22.x',
-	regions: ['lhr1'],
-	isr: { expiration: 21600 }
-};
-
 export const prerender = false;
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {

@@ -17,13 +17,16 @@ export const UK_DEFAULT: LocationCentroid = {
 };
 
 /**
- * Read the user's approximate location from Vercel's geo headers. Returns
- * UK_DEFAULT when nothing useful is present (local dev or non-Vercel).
+ * Read the user's approximate location from Cloudflare's IP geolocation
+ * (`request.cf`). Returns UK_DEFAULT when nothing useful is present (local
+ * dev, or an IP Cloudflare cannot place).
  */
-export function locationFromHeaders(headers: Headers): LocationCentroid {
-	const latStr = headers.get('x-vercel-ip-latitude');
-	const lonStr = headers.get('x-vercel-ip-longitude');
-	const cityRaw = headers.get('x-vercel-ip-city');
+export function locationFromCf(
+	cf: { latitude?: string; longitude?: string; city?: string } | undefined
+): LocationCentroid {
+	const latStr = cf?.latitude;
+	const lonStr = cf?.longitude;
+	const cityRaw = cf?.city;
 
 	if (!latStr || !lonStr) return UK_DEFAULT;
 

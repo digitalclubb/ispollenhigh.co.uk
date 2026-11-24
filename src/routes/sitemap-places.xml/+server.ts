@@ -11,8 +11,6 @@ import type { RequestHandler } from './$types';
  * and it was the only per-URL variation the old sitemap carried.
  */
 
-export const config = { regions: ['lhr1'] };
-
 export const GET: RequestHandler = () => {
 	const today = new Date().toISOString().slice(0, 10);
 

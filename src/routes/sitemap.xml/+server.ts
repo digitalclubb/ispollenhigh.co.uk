@@ -13,8 +13,6 @@ import type { RequestHandler } from './$types';
  * The path stays /sitemap.xml so the already-submitted property keeps working.
  */
 
-export const config = { regions: ['lhr1'] };
-
 export const GET: RequestHandler = () => {
 	const today = new Date().toISOString().slice(0, 10);
 

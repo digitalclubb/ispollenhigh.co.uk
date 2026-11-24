@@ -1,7 +1,7 @@
 /**
  * Per-day call counters per pollen source. Lives in module-scope memory
- * so each Vercel region tracks its own count. Total daily calls across
- * the site is `sum(regions)` — not exact but a useful approximation for
+ * so each Worker isolate tracks its own count. Total daily calls across
+ * the site is the sum across isolates — not exact but a useful approximation for
  * spotting quota issues before they become outages.
  *
  * Counters reset at the UTC date boundary by recording today's date

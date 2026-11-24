@@ -37,6 +37,11 @@ describe('checkRateLimit', () => {
 });
 
 describe('clientKey', () => {
+	it('prefers cf-connecting-ip when present', () => {
+		const h = new Headers({ 'cf-connecting-ip': '9.9.9.9', 'x-real-ip': '1.2.3.4' });
+		expect(clientKey(h)).toBe('9.9.9.9');
+	});
+
 	it('prefers x-real-ip when present', () => {
 		const h = new Headers({ 'x-real-ip': '1.2.3.4', 'x-forwarded-for': '5.6.7.8' });
 		expect(clientKey(h)).toBe('1.2.3.4');

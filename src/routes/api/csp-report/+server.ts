@@ -4,14 +4,12 @@ import type { RequestHandler } from './$types';
 /**
  * CSP violation report endpoint. Browsers POST a report here when our
  * Content-Security-Policy is violated. We log to the function output;
- * Vercel function logs collect them so we hear about CSP breakage
+ * Workers observability logs collect them so we hear about CSP breakage
  * before users do.
  *
  * Rate-limited because a malicious browser extension could spam reports.
  * Always returns 204 (browser doesn't care about the response).
  */
-
-export const config = { regions: ['lhr1'] };
 
 export const POST: RequestHandler = async ({ request }) => {
 	const limit = checkRateLimit(`csp:${clientKey(request.headers)}`, {

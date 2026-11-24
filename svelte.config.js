@@ -1,12 +1,10 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	preprocess: vitePreprocess(),
 	kit: {
-		// Per-route runtime/regions are configured in each +page.server.ts /
-		// +server.ts via `export const config`. Defaults to nodejs.
 		adapter: adapter(),
 		alias: {
 			$lib: 'src/lib',
@@ -18,8 +16,7 @@ const config = {
 		// are covered without hand-managing tokens.
 		//
 		// 'unsafe-inline' on style-src is needed for inline style="..."
-		// attributes set at runtime (Svelte 5's runtime and the Vercel
-		// Analytics / Speed Insights scripts both do this). Per CSP3
+		// attributes set at runtime (Svelte 5's runtime does this). Per CSP3
 		// spec, when nonces/hashes are present 'unsafe-inline' is
 		// IGNORED for <style> elements but HONORED for style attributes
 		// (hashes don't apply to attributes anyway). So:
@@ -37,18 +34,19 @@ const config = {
 				// the <script> tag in src/app.html for the regen one-liner.
 				'script-src': [
 					'self',
-					'https://va.vercel-scripts.com',
+					// Cloudflare Web Analytics beacon, injected at the edge.
+					'https://static.cloudflareinsights.com',
 					'sha256-YjRSrAKEGHPwjPxI6ABzc0d/mNrZGyyxmPVARbQXKlU='
 				],
 				'style-src': ['self', 'unsafe-inline'],
 				'font-src': ['self'],
 				'img-src': ['self', 'data:'],
-				'connect-src': ['self'],
+				'connect-src': ['self', 'https://cloudflareinsights.com'],
 				'frame-ancestors': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self'],
-				// Browsers POST violation reports here. Logged via Vercel
-				// function logs so we hear about CSP breakage early.
+				// Browsers POST violation reports here. Logged via Workers
+				// observability logs so we hear about CSP breakage early.
 				'report-uri': ['/api/csp-report']
 			}
 		}

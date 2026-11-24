@@ -2,19 +2,13 @@ import { toLinks, topCities } from '$lib/data/directory';
 import { REGIONS } from '$lib/data/locations';
 import { getPollen } from '$lib/server/pollen-service';
 import { homepageJsonLd, jsonLdScript } from '$lib/utils/jsonld';
-import { locationFromHeaders } from '$lib/utils/location';
+import { locationFromCf } from '$lib/utils/location';
 import type { PageServerLoad } from './$types';
-
-// Node runtime via Vercel's Fluid Compute (the dedicated 'edge' runtime is
-// deprecated). Pinned to lhr1 because the audience is UK-only.
-export const config = {
-	regions: ['lhr1']
-};
 
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ request, setHeaders }) => {
-	const location = locationFromHeaders(request.headers);
+export const load: PageServerLoad = async ({ platform, setHeaders }) => {
+	const location = locationFromCf(platform?.cf);
 	const reading = await getPollen({
 		lat: location.lat,
 		lon: location.lon,

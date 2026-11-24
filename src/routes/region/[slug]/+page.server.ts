@@ -5,12 +5,6 @@ import { locationPageData } from '$lib/server/location-page';
 import { getPollen } from '$lib/server/pollen-service';
 import type { PageServerLoad } from './$types';
 
-export const config = {
-	runtime: 'nodejs22.x',
-	regions: ['lhr1'],
-	isr: { expiration: 21600 }
-};
-
 export const prerender = false;
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {

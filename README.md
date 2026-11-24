@@ -8,7 +8,7 @@ See [`docs/SPEC.md`](./docs/SPEC.md) for the v1 specification and architecture.
 
 - SvelteKit 2 (Svelte 5)
 - TypeScript strict
-- Vercel edge runtime
+- Cloudflare Workers (adapter-cloudflare)
 - Plain CSS with custom properties (no Tailwind)
 - Biome for lint and format
 - pnpm
@@ -47,4 +47,4 @@ static/                 Static assets served at /
 
 ## Deployment
 
-Hosted on Vercel. Pushes to `main` deploy to production. Pull requests get preview deployments automatically.
+Hosted on Cloudflare Workers. Pushes to `main` deploy via Workers Builds. Cutover steps: `docs/CLOUDFLARE.md`.

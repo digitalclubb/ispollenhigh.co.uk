@@ -11,8 +11,8 @@
 	<h1>Cookies</h1>
 
 	<p>
-		ispollenhigh does not set cookies. We use Vercel Web Analytics and Vercel
-		Speed Insights, both in cookieless mode. We do not run any other tracking.
+		ispollenhigh does not set cookies. We use Cloudflare Web Analytics, which is
+		cookieless. We do not run any other tracking.
 		That is the whole story but the rest of this page exists so you can verify
 		it.
 	</p>
@@ -66,9 +66,10 @@
 	<p>
 		We do not embed third-party widgets, ads or trackers. The only external
 		network calls the site makes are to the pollen data provider (server
-		side, on the edge function) and to Vercel Web Analytics and Speed
-		Insights. Both Vercel products are cookieless and proxy through paths
-		on this domain rather than calling third-party hosts directly.
+		side, on the edge function) and to Cloudflare Web Analytics. Your browser
+		loads its small script from static.cloudflareinsights.com and sends an
+		anonymous page view beacon to cloudflareinsights.com. Neither sets a
+		cookie.
 	</p>
 </article>
 
