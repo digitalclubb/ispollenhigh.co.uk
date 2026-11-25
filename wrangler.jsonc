@@ -6,6 +6,9 @@
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	// CSP violation reports and pollen-service warnings land here.
 	"observability": { "enabled": true },
+	// Only serve on the custom domain (no duplicate content on *.workers.dev).
+	"workers_dev": false,
+	"preview_urls": false,
 	// www redirects to the apex via a zone Redirect Rule, not this Worker.
 	"routes": [{ "pattern": "ispollenhigh.co.uk", "custom_domain": true }]
 }
